@@ -1,0 +1,75 @@
+@import './styles/fonts.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-navy text-cream font-body antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+  }
+
+  a {
+    @apply text-cream no-underline;
+  }
+
+  button {
+    @apply cursor-pointer;
+  }
+
+  ::selection {
+    @apply bg-gold/40 text-navy;
+  }
+
+  :focus-visible {
+    outline: 2px solid #d9a25c;
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply font-support text-xs uppercase tracking-eyebrow text-gold/70;
+  }
+
+  .section-shell {
+    @apply relative w-full overflow-hidden bg-navy;
+  }
+}
+
+@layer utilities {
+  .text-gradient-accent {
+    @apply bg-accent-gradient bg-clip-text text-transparent;
+  }
+
+  .text-gradient-gold {
+    background-image: linear-gradient(90deg, #d9a25c 0%, #e0cba2 100%);
+    @apply bg-clip-text text-transparent;
+  }
+}
