@@ -22,24 +22,52 @@ navigates to a different screen.
 
 ## Getting started
 
+The frontend and the Express API run as two processes.
+
 ```bash
+# 1. API (terminal 1)
+cd express
 npm install
-cp .env.example .env
-# edit .env with your Google OAuth client ID and redirect URI
-npm run dev
+cp .env.example .env       # fill in DATABASE_URL, Google creds, JWT_SECRET
+npm run dev                # http://localhost:3000
+
+# 2. Frontend (terminal 2)
+npm install
+cp .env.example .env       # VITE_API_URL=http://localhost:3000
+npm run dev                # http://localhost:5173
 ```
+
+The shared database layer lives in `shared/db/` and has its own
+dependencies — run `npm install` there once, and `npx tsx migrate.ts` to
+apply `schema.sql` to Neon.
+
+Redis is used by the flag-submission rate limiter; the API starts without
+it, but logs connection errors until one is reachable.
 
 ## Google Sign-In setup
 
+The OAuth round trip is handled entirely by the backend — the browser
+never sees the client secret and never talks to Google directly.
+
 1. Create an OAuth 2.0 Client ID in the Google Cloud Console (Web
    application type).
-2. Add your dev and production URLs (e.g. `http://localhost:5173/auth`)
-   as authorized redirect URIs.
-3. Set `VITE_GOOGLE_CLIENT_ID` and `VITE_GOOGLE_REDIRECT_URI` in `.env`.
+2. Add `http://localhost:3000/auth/google/callback` as an authorized
+   redirect URI (it must match `GOOGLE_REDIRECT_URI` verbatim).
+3. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and
+   `GOOGLE_REDIRECT_URI` in `express/.env`.
 
-Sign-in uses the Authorization Code + PKCE flow directly against
-Google's OAuth endpoints (`src/services/googleAuth.js`) — no extra SDK
-required.
+Flow: the sign-in button navigates to `GET /auth/google` → Google →
+`GET /auth/google/callback`, which upserts the user in Neon, signs a JWT,
+sets it as an httpOnly cookie, and redirects to `/team`. The frontend
+reads the session back via `GET /auth/me`, so it survives a refresh and
+there is no token in browser storage.
+
+## API layer
+
+All backend calls go through `src/api/` — `client.js` holds the single
+fetch instance (base URL, credentials, timeout, error normalisation), with
+`auth.js` and `party.js` wrapping the endpoints. No component calls
+`fetch` directly.
 
 ## Assets
 

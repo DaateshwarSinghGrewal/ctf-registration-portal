@@ -6,6 +6,7 @@ import TeamManagementPage from '../pages/TeamManagement/TeamManagementPage.jsx'
 import CreateTeamPage from '../pages/TeamManagement/CreateTeamPage.jsx'
 import JoinTeamPage from '../pages/TeamManagement/JoinTeamPage.jsx'
 import NotFoundPage from '../pages/NotFound/NotFoundPage.jsx'
+import ProtectedRoute from './ProtectedRoute.jsx'
 
 /**
  * Centralized route configuration, matching the routing analysis:
@@ -16,6 +17,10 @@ import NotFoundPage from '../pages/NotFound/NotFoundPage.jsx'
  *  - "/team" is the post-auth Team Management screen, with "/team/create"
  *    and "/team/join" as the terminal destinations of its two CTAs.
  *  All three gated routes share AuthLayout (no nav bar).
+ *
+ * The "/team" subtree additionally sits behind ProtectedRoute, so an
+ * unauthenticated or expired visitor is sent to "/auth" in one place rather
+ * than each page checking for itself.
  */
 export const routes = [
   {
@@ -26,9 +31,14 @@ export const routes = [
     element: <AuthLayout />,
     children: [
       { path: '/auth', element: <GoogleAuthPage /> },
-      { path: '/team', element: <TeamManagementPage /> },
-      { path: '/team/create', element: <CreateTeamPage /> },
-      { path: '/team/join', element: <JoinTeamPage /> }
+      {
+        element: <ProtectedRoute />,
+        children: [
+          { path: '/team', element: <TeamManagementPage /> },
+          { path: '/team/create', element: <CreateTeamPage /> },
+          { path: '/team/join', element: <JoinTeamPage /> }
+        ]
+      }
     ]
   },
   {

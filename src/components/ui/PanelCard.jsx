@@ -4,7 +4,7 @@
  * Reused, with only its label swapped, for "Create Team", "Join Team",
  * the "Team Management" screen header, and the "Google Sign In" panel.
  */
-export default function PanelCard({ title, onClick, to, as: Tag, className = '' }) {
+export default function PanelCard({ title, onClick, as: Tag, className = '' }) {
   const Component = Tag ?? (onClick ? 'button' : 'div')
 
   return (

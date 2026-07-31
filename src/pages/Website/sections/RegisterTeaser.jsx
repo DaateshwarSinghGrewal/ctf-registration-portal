@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import PhotoCard from '../../../components/ui/PhotoCard.jsx'
 import Button from '../../../components/ui/Button.jsx'
-import { startGoogleSignIn } from '../../../services/googleAuth.js'
+import { useAuth } from '../../../context/AuthContext.jsx'
 
 const galleryPhotos = [
   {
@@ -28,16 +28,17 @@ const galleryPhotos = [
  * registration copy.
  */
 export default function RegisterTeaser() {
+  const { signInWithGoogle } = useAuth()
   const [signInError, setSignInError] = useState(null)
 
-  const handleGoogleSignIn = useCallback(async () => {
+  const handleGoogleSignIn = useCallback(() => {
     setSignInError(null)
     try {
-      await startGoogleSignIn()
+      signInWithGoogle()
     } catch (error) {
       setSignInError(error.message)
     }
-  }, [])
+  }, [signInWithGoogle])
 
   return (
     <section className="section-shell px-6 py-24 sm:py-32">
