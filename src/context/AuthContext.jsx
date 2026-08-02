@@ -1,47 +1,93 @@
-import { createContext, useContext, useMemo, useState, useCallback } from 'react'
+import { createContext, useContext, useMemo, useState, useCallback, useEffect } from 'react'
+import { fetchCurrentUser, googleSignInUrl, logout } from '../api/auth.js'
+import { onUnauthorized } from '../api/client.js'
+import { clearActivePartyId } from '../utils/activeParty.js'
 
 const AuthContext = createContext(null)
 
-const STORAGE_KEY = 'somnium.auth.user'
-
-function readStoredUser() {
-  try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
-}
-
+/**
+ * Auth state is owned by the backend: sign-in sets an httpOnly JWT cookie
+ * that JavaScript cannot read, so the source of truth is GET /auth/me rather
+ * than anything in browser storage. That is what makes the session survive a
+ * refresh, and what makes an expired token resolve to "signed out" on the
+ * next request instead of leaving stale user data on screen.
+ */
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => readStoredUser())
+  const [user, setUser] = useState(null)
+  const [status, setStatus] = useState('loading')
 
-  const signIn = useCallback((googleUser) => {
-    setUser(googleUser)
-    try {
-      window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(googleUser))
-    } catch {
-      // sessionStorage unavailable — auth state still lives in memory for this session
-    }
+  const applyUser = useCallback((nextUser) => {
+    setUser(nextUser)
+    setStatus(nextUser ? 'authenticated' : 'unauthenticated')
   }, [])
 
-  const signOut = useCallback(() => {
-    setUser(null)
-    try {
-      window.sessionStorage.removeItem(STORAGE_KEY)
-    } catch {
-      // sessionStorage unavailable — clearing in-memory state is sufficient
+  // Rehydrate on first load and after every refresh.
+  useEffect(() => {
+    const controller = new AbortController()
+    let active = true
+
+    fetchCurrentUser({ signal: controller.signal })
+      .then((currentUser) => {
+        if (active) applyUser(currentUser)
+      })
+      .catch(() => {
+        // Network failure or backend offline — treat as signed out; pages
+        // surface their own errors when a request actually fails.
+        if (active) applyUser(null)
+      })
+
+    return () => {
+      active = false
+      controller.abort()
     }
+  }, [applyUser])
+
+  // A 401 from any request means the token expired or was cleared.
+  useEffect(
+    () =>
+      onUnauthorized(() => {
+        clearActivePartyId()
+        applyUser(null)
+      }),
+    [applyUser]
+  )
+
+  /** Hands the browser to the backend, which owns the Google OAuth round trip. */
+  const signInWithGoogle = useCallback(() => {
+    window.location.assign(googleSignInUrl())
   }, [])
+
+  const signOut = useCallback(async () => {
+    try {
+      await logout()
+    } catch {
+      // Even if the call fails the local session must not survive; the
+      // cookie expires on its own within five hours.
+    }
+    clearActivePartyId()
+    applyUser(null)
+  }, [applyUser])
+
+  /** Re-reads the session, e.g. after an action that may have changed roles. */
+  const refresh = useCallback(async () => {
+    try {
+      applyUser(await fetchCurrentUser())
+    } catch {
+      applyUser(null)
+    }
+  }, [applyUser])
 
   const value = useMemo(
     () => ({
       user,
-      isAuthenticated: Boolean(user),
-      signIn,
-      signOut
+      status,
+      isLoading: status === 'loading',
+      isAuthenticated: status === 'authenticated',
+      signInWithGoogle,
+      signOut,
+      refresh
     }),
-    [user, signIn, signOut]
+    [user, status, signInWithGoogle, signOut, refresh]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

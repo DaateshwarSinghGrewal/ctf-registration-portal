@@ -2,23 +2,30 @@ import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import StarfieldBackground from '../../components/layout/StarfieldBackground.jsx'
 import Button from '../../components/ui/Button.jsx'
-import { useAuth } from '../../context/AuthContext.jsx'
+import { createParty } from '../../api/party.js'
+import { writeActivePartyId } from '../../utils/activeParty.js'
 
 /**
  * Create Team screen. Destination of the "Create Team" CTA identified
  * during routing analysis; this flow was not present in the inspected
  * Figma file, so its layout follows the same panel/starfield visual
  * language as Team Management and Google Auth for continuity.
+ *
+ * Submits to POST /party/create. The backend owns the invite code, so the
+ * created party's id is stored and Team Management shows it on return.
+ * Reaching this page at all requires a session — see ProtectedRoute.
  */
 export default function CreateTeamPage() {
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
   const [teamName, setTeamName] = useState('')
   const [error, setError] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = useCallback(
-    (event) => {
+    async (event) => {
       event.preventDefault()
+      if (isSubmitting) return
+
       const trimmedName = teamName.trim()
 
       if (trimmedName.length < 3) {
@@ -27,24 +34,25 @@ export default function CreateTeamPage() {
       }
 
       setError(null)
-      navigate('/team', { replace: true })
-    },
-    [teamName, navigate]
-  )
+      setIsSubmitting(true)
 
-  if (!isAuthenticated) {
-    return (
-      <main className="section-shell relative flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-24 text-center">
-        <StarfieldBackground density={70} glow={false} />
-        <p className="relative z-10 font-support text-lg text-cream-soft">
-          Sign in with Google before creating a team.
-        </p>
-        <Button variant="text-link" to="/auth" className="relative z-10">
-          Go to Sign In
-        </Button>
-      </main>
-    )
-  }
+      try {
+        const party = await createParty({ name: trimmedName })
+
+        if (party?.id) {
+          writeActivePartyId(party.id)
+        }
+
+        navigate('/team', { replace: true })
+      } catch (createError) {
+        // A 401 is handled globally by AuthContext, which drops the session
+        // and lets ProtectedRoute redirect to sign-in.
+        setError(createError.message)
+        setIsSubmitting(false)
+      }
+    },
+    [teamName, navigate, isSubmitting]
+  )
 
   return (
     <main className="section-shell relative flex min-h-screen flex-col items-center justify-center px-6 py-24">
@@ -71,7 +79,8 @@ export default function CreateTeamPage() {
             onChange={(event) => setTeamName(event.target.value)}
             placeholder="The Dreaming Owls"
             autoComplete="off"
-            className="w-full rounded-lg border border-cream/20 bg-navy-deep px-5 py-4 font-body text-lg text-cream placeholder:text-neutral-body focus-visible:border-gold"
+            disabled={isSubmitting}
+            className="w-full rounded-lg border border-cream/20 bg-navy-deep px-5 py-4 font-body text-lg text-cream placeholder:text-neutral-body focus-visible:border-gold disabled:opacity-60"
           />
           {error ? (
             <p role="alert" className="font-support text-sm text-accent-pink">
@@ -80,8 +89,13 @@ export default function CreateTeamPage() {
           ) : null}
         </div>
 
-        <Button variant="pill" type="submit" className="w-full max-w-none">
-          Create Team
+        <Button
+          variant="pill"
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full max-w-none disabled:opacity-60"
+        >
+          {isSubmitting ? 'Creating…' : 'Create Team'}
         </Button>
       </form>
     </main>

@@ -1,54 +1,46 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useState } from 'react'
+import { Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import PanelCard from '../../components/ui/PanelCard.jsx'
 import StarfieldBackground from '../../components/layout/StarfieldBackground.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
-import { startGoogleSignIn, completeGoogleSignIn } from '../../services/googleAuth.js'
 
 /**
  * Google Auth screen. Reuses the pill-panel component seen on Team
  * Management, with its label swapped to "Google Sign In" per the Figma
  * audit. Sits between the Website's "Register Now" entry point and the
- * Team Management screen: on this route, a returning OAuth callback
- * (a "code" query param) is completed automatically; otherwise the
- * panel starts a fresh sign-in.
+ * Team Management screen.
+ *
+ * The OAuth round trip belongs to the backend: this panel hands the browser
+ * to GET /auth/google, and the backend redirects to /team once it has set
+ * the session cookie. Failures come back as a "?error=" query param, since
+ * a top-level navigation cannot receive a JSON error body.
  */
 export default function GoogleAuthPage() {
-  const navigate = useNavigate()
-  const { signIn } = useAuth()
-  const [status, setStatus] = useState('idle')
-  const [error, setError] = useState(null)
-  const hasAttemptedCallback = useRef(false)
+  const { isAuthenticated, isLoading, signInWithGoogle } = useAuth()
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
 
-  useEffect(() => {
-    const hasCode = new URLSearchParams(window.location.search).has('code')
-    if (!hasCode || hasAttemptedCallback.current) {
-      return
-    }
-    hasAttemptedCallback.current = true
+  const [error, setError] = useState(() => searchParams.get('error'))
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
-    setStatus('completing')
-    completeGoogleSignIn(window.location.href)
-      .then((user) => {
-        signIn(user)
-        navigate('/team', { replace: true })
-      })
-      .catch((callbackError) => {
-        setError(callbackError.message)
-        setStatus('idle')
-      })
-  }, [navigate, signIn])
+  const handleSignIn = useCallback(() => {
+    // Guarded here rather than by dropping onClick: PanelCard renders a
+    // <div> instead of a <button> when it has no handler.
+    if (isLoading || isRedirecting) return
 
-  const handleSignIn = useCallback(async () => {
     setError(null)
-    setStatus('redirecting')
+    setIsRedirecting(true)
     try {
-      await startGoogleSignIn()
+      signInWithGoogle()
     } catch (signInError) {
       setError(signInError.message)
-      setStatus('idle')
+      setIsRedirecting(false)
     }
-  }, [])
+  }, [isLoading, isRedirecting, signInWithGoogle])
+
+  if (isAuthenticated) {
+    return <Navigate to={location.state?.from ?? '/team'} replace />
+  }
 
   return (
     <main className="section-shell relative flex min-h-screen flex-col items-center justify-center px-6 py-24">
@@ -58,7 +50,7 @@ export default function GoogleAuthPage() {
         <p className="eyebrow">One Step Closer</p>
 
         <PanelCard
-          title={status === 'completing' ? 'Signing In…' : 'Google Sign In'}
+          title={isRedirecting ? 'Redirecting…' : 'Google Sign In'}
           onClick={handleSignIn}
         />
 
