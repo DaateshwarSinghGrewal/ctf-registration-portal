@@ -15,11 +15,17 @@ import adminRouter from "./routes/admin.routes";
 
 const app = express();
 
-// The SPA runs on a different port and authenticates with an httpOnly
-// cookie, so the browser needs both an explicit origin and credentials.
+// Hosting platforms (Render, Railway, Fly, …) terminate TLS at a proxy and
+// forward over plain HTTP. Without this, Express sees an insecure request
+// and refuses to send the Secure session cookie.
+app.set("trust proxy", 1);
+
+// The SPA is served from a different origin and authenticates with an
+// httpOnly cookie, so the browser needs both an explicit origin and
+// credentials. env.frontendUrls may list several (e.g. prod + localhost).
 app.use(
   cors({
-    origin: env.frontendUrl,
+    origin: env.frontendUrls,
     credentials: true,
   })
 );

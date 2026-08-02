@@ -10,6 +10,19 @@ const TOKEN_COOKIE = "token";
 const COOKIE_MAX_AGE_MS = 5 * 60 * 60 * 1000;
 
 /**
+ * Attributes shared by setting and clearing the session cookie. A browser
+ * only removes a cookie when these match the ones it was stored with, so
+ * they must not drift apart between googleCallback and logout.
+ */
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: env.cookieSecure,
+  sameSite: env.cookieSameSite,
+  domain: env.cookieDomain,
+  path: "/",
+} as const;
+
+/**
  * Builds an absolute URL on the frontend origin. The OAuth callback is a
  * top-level browser navigation, so failures have to come back as a redirect
  * the SPA can render — a JSON body would be shown to the user as raw text.
@@ -46,12 +59,8 @@ export async function googleCallback(req: Request, res: Response): Promise<void>
     const token = signAccessToken(payload);
 
     res.cookie(TOKEN_COOKIE, token, {
-      httpOnly: true,
-      secure: env.nodeEnv === "production",
-      sameSite: "lax",
-      domain: env.cookieDomain,
+      ...COOKIE_OPTIONS,
       maxAge: COOKIE_MAX_AGE_MS,
-      path: "/",
     });
 
     res.redirect(frontendUrl("/team"));
@@ -62,13 +71,7 @@ export async function googleCallback(req: Request, res: Response): Promise<void>
 }
 
 export function logout(_req: Request, res: Response): void {
-  res.clearCookie(TOKEN_COOKIE, {
-    httpOnly: true,
-    secure: env.nodeEnv === "production",
-    sameSite: "lax",
-    domain: env.cookieDomain,
-    path: "/",
-  });
+  res.clearCookie(TOKEN_COOKIE, COOKIE_OPTIONS);
 
   res.status(200).json({ message: "Logged out" });
 }
