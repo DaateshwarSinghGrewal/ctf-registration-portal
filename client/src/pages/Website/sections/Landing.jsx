@@ -21,6 +21,9 @@ export default function Landing() {
         />
         <div className="absolute inset-0 bg-surface-gradient mix-blend-multiply" />
         <StarfieldBackground density={40} glow={false} />
+        
+        {/* Smooth blend into the next section */}
+        <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-void to-transparent" />
       </div>
 
       {/* HERO WRAPPER - Fits the main screen perfectly */}

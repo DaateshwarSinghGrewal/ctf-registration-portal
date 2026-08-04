@@ -9,14 +9,23 @@ import ContactUs from './sections/ContactUs.jsx'
  * Composes the Website's single long scrollable page.
  * Sections are rendered in their natural top-to-bottom scroll order.
  */
+const Separator = () => (
+  <div className="w-full max-w-6xl mx-auto h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+)
+
 export default function WebsitePage() {
   return (
     <main>
       <Landing />
+      <Separator />
       <DemoVideo />
+      <Separator />
       <AboutGame />
+      <Separator />
       <RegisterTeaser />
+      <Separator />
       <Sponsors />
+      <Separator />
       <ContactUs />
     </main>
   )
