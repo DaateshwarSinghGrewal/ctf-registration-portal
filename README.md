@@ -32,6 +32,7 @@ cp .env.example .env       # fill in DATABASE_URL, Google creds, JWT_SECRET
 npm run dev                # http://localhost:3000
 
 # 2. Frontend (terminal 2)
+cd client
 npm install
 cp .env.example .env       # VITE_API_URL=http://localhost:3000
 npm run dev                # http://localhost:5173
@@ -64,24 +65,24 @@ there is no token in browser storage.
 
 ## API layer
 
-All backend calls go through `src/api/` — `client.js` holds the single
+All backend calls go through `client/src/api/` — `client.js` holds the single
 fetch instance (base URL, credentials, timeout, error normalisation), with
 `auth.js` and `party.js` wrapping the endpoints. No component calls
 `fetch` directly.
 
 ## Assets
 
-Place referenced images/fonts under `public/assets/`:
+Place referenced images/fonts under `client/public/assets/`:
 
-- `public/assets/images/` — hero art, about/register photos, sponsor
+- `client/public/assets/images/` — hero art, about/register photos, sponsor
   logos, demo video poster
-- `public/assets/videos/` — demo video file
-- `public/assets/fonts/` — self-hosted `AmstelvarAlpha` variable font
-  (all other typefaces load from Google Fonts in `index.html`)
+- `client/public/assets/videos/` — demo video file
+- `client/public/assets/fonts/` — self-hosted `AmstelvarAlpha` variable font
+  (all other typefaces load from Google Fonts in `client/index.html`)
 
-## Scripts
+## Scripts (from `client/`)
 
 - `npm run dev` — start the Vite dev server
-- `npm run build` — production build to `dist/`
+- `npm run build` — production build to `client/dist/`
 - `npm run preview` — preview the production build locally
 - `npm run lint` — run ESLint
