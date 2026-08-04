@@ -1,4 +1,3 @@
-import ArrowIcon from '../ui/ArrowIcon.jsx'
 import { footerTickerItems } from '../../constants/navLinks.js'
 
 /**
@@ -10,14 +9,24 @@ export default function FooterTicker() {
   const loopItems = [...footerTickerItems, ...footerTickerItems, ...footerTickerItems]
 
   return (
-    <div className="w-full overflow-hidden border-y border-cream/10 bg-navy-deep py-6" aria-hidden="true">
-      <div className="flex w-max animate-[ticker_22s_linear_infinite] items-center gap-16">
+    <div className="w-full overflow-hidden border-y border-white/5 bg-void-soft py-6" aria-hidden="true">
+      <div className="flex w-max animate-[drift_22s_linear_infinite] items-center gap-16">
         {loopItems.map((item, index) => (
           <span key={`${item}-${index}`} className="flex items-center gap-4">
-            <span className="font-support text-sm uppercase tracking-eyebrow text-cream-soft">
+            <span className="font-heading text-sm font-semibold uppercase tracking-wide text-neutral-muted">
               {item}
             </span>
-            <ArrowIcon className="text-gold" />
+            {/* Meaningful CTF Flag Icon replacing the arrow */}
+            <svg 
+              viewBox="0 0 24 24" 
+              width="14" 
+              height="14" 
+              fill="currentColor" 
+              className="text-crystal-light opacity-80"
+              aria-hidden="true"
+            >
+              <path d="M5 3v18h2V12h12l-3-4.5 3-4.5H7V3H5z" />
+            </svg>
           </span>
         ))}
       </div>

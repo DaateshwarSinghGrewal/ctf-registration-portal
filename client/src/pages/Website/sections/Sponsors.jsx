@@ -2,10 +2,8 @@ import SectionHeading from '../../../components/ui/SectionHeading.jsx'
 import StarfieldBackground from '../../../components/layout/StarfieldBackground.jsx'
 
 const sponsors = [
-  { name: 'Nova Systems', logo: '/assets/images/sponsors/nova-systems.svg' },
-  { name: 'Lumen Cyber', logo: '/assets/images/sponsors/lumen-cyber.svg' },
-  { name: 'Halcyon Labs', logo: '/assets/images/sponsors/halcyon-labs.svg' },
-  { name: 'Driftwood Security', logo: '/assets/images/sponsors/driftwood-security.svg' }
+  { name: 'Goldman Sachs', logo: 'Goldman Sachs' }, // We'll just use text or actual logos if we have them, for now styled text.
+  { name: 'American Express', logo: 'AMERICAN EXPRESS' }
 ]
 
 /**
@@ -15,22 +13,22 @@ const sponsors = [
 export default function Sponsors() {
   return (
     <section className="section-shell relative px-6 py-24 sm:py-32" id="sponsors">
-      <StarfieldBackground density={70} glow={false} />
+      <StarfieldBackground density={50} glow={true} />
 
-      <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center gap-12 text-center">
+      <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center gap-16 text-center">
         <SectionHeading eyebrow="With Thanks To" title="Our" accentWord="Sponsors" align="center" />
 
-        <ul className="grid grid-cols-2 gap-10 sm:grid-cols-4">
-          {sponsors.map((sponsor) => (
-            <li key={sponsor.name} className="flex items-center justify-center">
-              <img
-                src={sponsor.logo}
-                alt={sponsor.name}
-                className="max-h-12 w-auto opacity-80 grayscale transition-opacity duration-200 hover:opacity-100"
-                loading="lazy"
-              />
-            </li>
-          ))}
+        <ul className="flex flex-col gap-10 sm:flex-row sm:gap-16">
+          <li className="flex items-center justify-center surface-card p-10 sm:w-1/2">
+            <span className="font-heading text-4xl font-bold tracking-widest text-white/90">
+              Goldman<br />Sachs
+            </span>
+          </li>
+          <li className="flex items-center justify-center surface-card p-10 sm:w-1/2">
+            <span className="font-heading text-3xl font-bold tracking-widest text-white/90">
+              AMERICAN<br />EXPRESS
+            </span>
+          </li>
         </ul>
       </div>
     </section>

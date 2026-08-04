@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom'
 import ArrowIcon from './ArrowIcon.jsx'
 
 const BASE_PILL =
-  'inline-flex items-center justify-center rounded-panel bg-navy-panel px-12 py-6 font-hero text-3xl font-bold text-cream transition-colors duration-200 hover:bg-navy-deep focus-visible:outline-gold'
+  'inline-flex items-center justify-center surface-card px-12 py-6 font-brand text-3xl font-bold text-white transition-all duration-300 hover:shadow-crystal hover:border-amethyst/50 focus-visible:outline-amethyst'
 
 const BASE_TEXT_LINK =
-  'inline-flex items-center gap-2 border-b border-gold/60 pb-1 font-support text-xs uppercase tracking-navlink text-gold transition-colors duration-200 hover:text-cream hover:border-cream'
+  'inline-flex items-center gap-2 border-b border-amethyst/60 pb-1 font-body text-xs font-semibold uppercase tracking-wide text-amethyst transition-colors duration-200 hover:text-white hover:border-white'
 
 /**
  * Unified button component covering the two button styles identified in

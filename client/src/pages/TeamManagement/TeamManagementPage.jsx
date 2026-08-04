@@ -67,17 +67,17 @@ export default function TeamManagementPage() {
         <PanelCard title="Team Management" as="div" />
 
         {isLoadingParty ? (
-          <p className="font-support text-sm text-cream-soft">Loading your team…</p>
+          <p className="font-body text-sm text-neutral-body">Loading your team…</p>
         ) : null}
 
         {party ? (
           <div className="flex flex-col items-center gap-2">
-            <p className="font-support text-lg text-cream">{party.name}</p>
-            <p className="font-support text-xs uppercase tracking-navlink text-cream-soft">
+            <p className="font-heading text-lg font-bold tracking-wide text-white">{party.name}</p>
+            <p className="font-heading text-xs uppercase tracking-wide text-crystal-light">
               Join code{' '}
-              <span className="font-body text-base tracking-normal text-gold">{party.id}</span>
+              <span className="font-brand text-base tracking-normal text-amethyst-bright">{party.id}</span>
             </p>
-            <p className="font-support text-sm text-cream-soft">
+            <p className="font-body text-sm text-neutral-body">
               {party.members?.length ?? 0} of {party.maxPlayers} members
               {party.members?.length
                 ? `: ${party.members.map((member) => member.username).join(', ')}`
@@ -87,7 +87,7 @@ export default function TeamManagementPage() {
         ) : null}
 
         {partyError ? (
-          <p role="alert" className="font-support text-sm text-accent-pink">
+          <p role="alert" className="font-body text-sm text-red-400">
             {partyError}
           </p>
         ) : null}

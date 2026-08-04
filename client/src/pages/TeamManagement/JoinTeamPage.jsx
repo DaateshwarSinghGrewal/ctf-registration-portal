@@ -60,11 +60,11 @@ export default function JoinTeamPage() {
       >
         <div className="flex flex-col items-center gap-2">
           <p className="eyebrow">Already Have a Code?</p>
-          <h1 className="font-hero text-5xl font-bold text-cream sm:text-6xl">Join a Team</h1>
+          <h1 className="font-heading text-5xl font-bold text-white sm:text-6xl">Join a Team</h1>
         </div>
 
         <div className="flex w-full flex-col items-start gap-2 text-left">
-          <label htmlFor="join-code" className="font-support text-xs uppercase tracking-navlink text-cream-soft">
+          <label htmlFor="join-code" className="font-heading text-xs uppercase tracking-wide text-crystal-light">
             Join code
           </label>
           <input
@@ -76,10 +76,10 @@ export default function JoinTeamPage() {
             placeholder="ORBIT-4821"
             autoComplete="off"
             disabled={isSubmitting}
-            className="w-full rounded-lg border border-cream/20 bg-navy-deep px-5 py-4 font-body text-lg text-cream placeholder:text-neutral-body focus-visible:border-gold disabled:opacity-60"
+            className="input-field uppercase"
           />
           {error ? (
-            <p role="alert" className="font-support text-sm text-accent-pink">
+            <p role="alert" className="font-body text-sm text-red-400">
               {error}
             </p>
           ) : null}

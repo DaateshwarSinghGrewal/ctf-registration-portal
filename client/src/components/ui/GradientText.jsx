@@ -4,8 +4,8 @@
  * headline accents) or the cooler blue -> pink -> purple gradient (used
  * sparingly for single-word emphasis, e.g. "Game", "Video").
  */
-export default function GradientText({ children, variant = 'gold', as: Tag = 'span', className = '' }) {
-  const gradientClass = variant === 'accent' ? 'text-gradient-accent' : 'text-gradient-gold'
+export default function GradientText({ children, variant = 'crystal', as: Tag = 'span', className = '' }) {
+  const gradientClass = variant === 'accent' ? 'text-gradient-accent' : 'text-gradient-crystal'
 
   return <Tag className={`${gradientClass} ${className}`}>{children}</Tag>
 }

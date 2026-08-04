@@ -11,7 +11,7 @@ export default function SectionHeading({
   eyebrow,
   title,
   accentWord,
-  accentVariant = 'gold',
+  accentVariant = 'crystal',
   description,
   align = 'left',
   id
@@ -22,7 +22,7 @@ export default function SectionHeading({
     <div className={`flex flex-col gap-6 ${alignmentClass}`} id={id}>
       {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
 
-      <h2 className="font-display text-5xl leading-tight text-cream sm:text-6xl">
+      <h2 className="font-heading text-5xl leading-tight text-white sm:text-6xl">
         {title}{' '}
         {accentWord ? (
           <GradientText variant={accentVariant} as="span">
@@ -32,7 +32,7 @@ export default function SectionHeading({
       </h2>
 
       {description ? (
-        <p className="max-w-2xl font-body text-xl leading-relaxed text-cream-soft sm:text-2xl">
+        <p className="max-w-2xl font-body text-xl leading-relaxed text-neutral-body sm:text-2xl">
           {description}
         </p>
       ) : null}

@@ -1,5 +1,3 @@
-@import './styles/fonts.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,18 +12,18 @@
   }
 
   body {
-    @apply bg-navy text-cream font-body antialiased;
+    @apply bg-void text-white font-body antialiased;
   }
 
   h1,
   h2,
   h3,
   h4 {
-    @apply font-display;
+    @apply font-heading font-semibold uppercase;
   }
 
   a {
-    @apply text-cream no-underline;
+    @apply text-white no-underline;
   }
 
   button {
@@ -33,11 +31,11 @@
   }
 
   ::selection {
-    @apply bg-gold/40 text-navy;
+    @apply bg-amethyst/40 text-white;
   }
 
   :focus-visible {
-    outline: 2px solid #d9a25c;
+    outline: 2px solid #7c3aed;
     outline-offset: 3px;
   }
 
@@ -55,21 +53,48 @@
 
 @layer components {
   .eyebrow {
-    @apply font-support text-xs uppercase tracking-eyebrow text-gold/70;
+    @apply font-heading text-xs font-medium uppercase tracking-eyebrow text-crystal-light;
   }
 
   .section-shell {
-    @apply relative w-full overflow-hidden bg-navy;
+    @apply relative w-full overflow-hidden bg-void;
+  }
+
+  /* Dark frosted surface for cards/panels */
+  .surface-card {
+    @apply rounded-card border border-white/[0.06] bg-void-card backdrop-blur-sm;
+  }
+
+  .surface-panel {
+    @apply rounded-panel border border-white/[0.08] bg-void-panel;
+  }
+
+  /* Text input styling */
+  .input-field {
+    @apply w-full rounded-card border border-white/10 bg-void-soft px-5 py-4 font-body text-base text-white
+      placeholder:text-neutral-muted
+      focus-visible:border-amethyst focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amethyst/50
+      disabled:opacity-50;
   }
 }
 
 @layer utilities {
-  .text-gradient-accent {
-    @apply bg-accent-gradient bg-clip-text text-transparent;
+  .text-gradient-crystal {
+    background-image: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%);
+    @apply bg-clip-text text-transparent;
   }
 
-  .text-gradient-gold {
-    background-image: linear-gradient(90deg, #d9a25c 0%, #e0cba2 100%);
-    @apply bg-clip-text text-transparent;
+  /* Invert black-on-white images to white-on-transparent for dark backgrounds */
+  .invert-asset {
+    filter: invert(1);
+  }
+
+  /* Subtle noise/grain texture overlay */
+  .grain-overlay::after {
+    content: '';
+    @apply pointer-events-none absolute inset-0 opacity-[0.03];
+    /* Using a simpler base64 or external noise image avoids Tailwind parser issues with inline SVGs */
+    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM/wDtAAAACHRSTlMAMwAAMwAAMwDPd9U+AAAAQklEQVQ4y2NgQAX8DIxgwsXEgElxMQFMsrIxIEhxsTGAqMTERA9IiomJGUDUyspEAxRJiYmJQNTKykQvFIUYEAAA3+UDU1Vq+6QAAAAASUVORK5CYII=");
+    background-repeat: repeat;
   }
 }

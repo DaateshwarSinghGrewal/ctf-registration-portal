@@ -11,7 +11,7 @@ export default function PanelCard({ title, onClick, as: Tag, className = '' }) {
     <Component
       type={Component === 'button' ? 'button' : undefined}
       onClick={onClick}
-      className={`flex h-[106px] w-full max-w-[456px] items-center justify-center rounded-panel bg-navy-panel px-8 text-center font-hero text-4xl font-bold text-cream shadow-lg transition-transform duration-200 hover:scale-[1.02] focus-visible:outline-gold sm:text-5xl ${className}`}
+      className={`flex h-[106px] w-full max-w-[456px] items-center justify-center surface-card px-8 text-center font-brand text-4xl font-bold text-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-crystal hover:border-amethyst/50 focus-visible:outline-amethyst sm:text-5xl ${className}`}
     >
       {title}
     </Component>

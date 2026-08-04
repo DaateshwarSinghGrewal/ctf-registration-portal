@@ -13,7 +13,7 @@ export default function NavBar() {
   const { scrollToSection } = useScrollAnchor()
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-cream/10 bg-ink">
+    <header className="sticky top-0 z-40 w-full border-b border-white/5 bg-void/80 backdrop-blur-md">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5" aria-label="Primary">
         <div className="hidden flex-1 items-center gap-10 md:flex">
           {navLinks
@@ -24,7 +24,7 @@ export default function NavBar() {
                 key={link.label}
                 type="button"
                 onClick={() => scrollToSection(link.sectionId)}
-                className="font-nav text-sm uppercase tracking-navlink text-cream transition-colors duration-200 hover:text-gold"
+                className="font-body text-sm font-medium uppercase tracking-wide text-neutral-body transition-colors duration-200 hover:text-white"
               >
                 {link.label}
               </button>
@@ -33,9 +33,10 @@ export default function NavBar() {
 
         <Link
           to="/"
-          className="font-nav text-2xl uppercase tracking-navlink text-cream transition-colors duration-200 hover:text-gold"
+          className="flex items-center gap-3 transition-opacity duration-200 hover:opacity-80"
         >
-          Somnium
+          <img src="/src/assets/somniumLogo.png" alt="" className="h-8 w-auto invert-asset opacity-90" aria-hidden="true" />
+          <span className="font-brand text-2xl font-bold tracking-wide text-white">SOMNIUM</span>
         </Link>
 
         <div className="hidden flex-1 items-center justify-end gap-10 md:flex">
@@ -47,7 +48,7 @@ export default function NavBar() {
                 key={link.label}
                 type="button"
                 onClick={() => scrollToSection(link.sectionId)}
-                className="font-nav text-sm uppercase tracking-navlink text-cream transition-colors duration-200 hover:text-gold"
+                className="font-body text-sm font-medium uppercase tracking-wide text-neutral-body transition-colors duration-200 hover:text-white"
               >
                 {link.label}
               </button>

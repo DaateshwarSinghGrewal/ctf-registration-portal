@@ -18,15 +18,15 @@ export default function CountdownTimer() {
   ]
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <p className="font-countdown text-lg uppercase tracking-eyebrow text-gold">Starts in</p>
+    <div className="flex flex-col items-center gap-6">
+      <p className="font-heading text-lg font-medium uppercase tracking-wide text-amethyst-bright">Starts in</p>
       <div className="flex items-center gap-6 sm:gap-10" role="timer" aria-live="polite">
         {units.map((unit) => (
-          <div key={unit.label} className="flex flex-col items-center gap-1">
-            <span className="font-countdown text-4xl text-cream sm:text-5xl">
+          <div key={unit.label} className="flex min-w-[80px] flex-col items-center gap-2 surface-card px-4 py-4 sm:min-w-[100px]">
+            <span className="font-brand text-4xl font-bold text-white sm:text-5xl">
               {String(unit.value).padStart(2, '0')}
             </span>
-            <span className="font-support text-xs uppercase tracking-navlink text-cream-soft">
+            <span className="font-body text-xs font-semibold uppercase tracking-wide text-neutral-body">
               {unit.label}
             </span>
           </div>

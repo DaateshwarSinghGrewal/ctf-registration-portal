@@ -32,14 +32,14 @@ export const navLinks = [
  * Footer ticker items (Page 1B). Purely decorative/branding marquee,
  * not functional navigation, repeated to create a seamless scroll loop.
  */
-export const footerTickerItems = ['LEARN', 'CODE', 'COLLABORATE']
+export const footerTickerItems = ['COMPETE', 'LEARN', 'CONQUER', 'COLLABORATE']
 
 /**
  * Outbound social/contact links rendered on the Contact Us section (Page 5).
  * These are external links, not internal routes.
  */
 export const socialLinks = [
-  { label: 'Website', href: 'https://somnium.ccs.example' },
-  { label: 'Discord', href: 'https://discord.gg/somnium' },
-  { label: 'Instagram', href: 'https://instagram.com/somniumctf' }
+  { label: 'Instagram', href: 'https://instagram.com/ccs_tiet' },
+  { label: 'Facebook', href: 'https://facebook.com/ccstu' },
+  { label: 'LinkedIn', href: 'https://linkedin.com/company/ccs-tiet' }
 ]

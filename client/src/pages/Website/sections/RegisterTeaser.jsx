@@ -41,35 +41,26 @@ export default function RegisterTeaser() {
   }, [signInWithGoogle])
 
   return (
-    <section className="section-shell px-6 py-24 sm:py-32">
-      <div className="mx-auto flex max-w-4xl flex-col items-center gap-12 text-center">
-        <div className="flex flex-col items-center gap-4">
-          <h2 className="font-heading text-5xl text-cream sm:text-6xl">Register Now</h2>
-          <p className="font-support text-lg text-cream-soft">
+    <section className="section-shell relative px-6 py-24 sm:py-32">
+      <div className="absolute inset-0 bg-crystal-gradient opacity-[0.03]" aria-hidden="true" />
+      <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center gap-12 text-center">
+        <div className="flex flex-col items-center gap-6 surface-card p-12 w-full max-w-2xl border-t-2 border-t-amethyst-bright">
+          <h2 className="font-heading text-5xl text-white sm:text-6xl uppercase font-bold tracking-wide">Register Now</h2>
+          <p className="font-body text-lg text-neutral-body">
             <button
               type="button"
               onClick={handleGoogleSignIn}
-              className="border-b border-gold/60 text-gold transition-colors duration-200 hover:text-cream hover:border-cream"
+              className="border-b border-amethyst/60 text-amethyst transition-colors duration-200 hover:text-white hover:border-white pb-1"
             >
               Click here to sign in with Google
             </button>
           </p>
           {signInError ? (
-            <p role="alert" className="font-support text-sm text-accent-pink">
+            <p role="alert" className="font-body text-sm text-red-400 mt-2">
               {signInError}
             </p>
           ) : null}
         </div>
-
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
-          {galleryPhotos.map((photo) => (
-            <PhotoCard key={photo.src} src={photo.src} alt={photo.alt} />
-          ))}
-        </div>
-
-        <Button variant="text-link" href="https://somnium.ccs.example/merch">
-          Order Now
-        </Button>
       </div>
     </section>
   )

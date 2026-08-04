@@ -54,12 +54,12 @@ export default function GoogleAuthPage() {
           onClick={handleSignIn}
         />
 
-        <p className="max-w-sm font-support text-base text-cream-soft">
+        <p className="max-w-sm font-body text-base text-neutral-body">
           Sign in with your Google account to create or join a team for Somnium.
         </p>
 
         {error ? (
-          <p role="alert" className="font-support text-sm text-accent-pink">
+          <p role="alert" className="font-body text-sm text-red-400">
             {error}
           </p>
         ) : null}
