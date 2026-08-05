@@ -2,7 +2,7 @@ import type { Server as HttpServer } from "node:http";
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import cookieParser from "cookie-parser";
-import { env } from "../config/env.js";
+import { env, isOriginAllowed } from "../config/env.js";
 import { logger } from "../core/logger.js";
 import { TOKEN_COOKIE } from "../core/middleware/authenticateUser.js";
 import { redis } from "../database/redis.js";
@@ -62,9 +62,13 @@ function trackDisconnect(userId: string): boolean {
 
 export function createSocketServer(httpServer: HttpServer): Server {
   const io = new Server(httpServer, {
-    // Same allow-list as the REST CORS config; credentials are required because
-    // authentication rides on a cookie.
-    cors: { origin: env.frontendUrls, credentials: true },
+    // Same rule as the REST CORS config, so a handshake can never be rejected
+    // for an origin the API would accept over HTTP. Credentials are required
+    // because authentication rides on a cookie.
+    cors: {
+      origin: (origin, callback) => callback(null, isOriginAllowed(origin)),
+      credentials: true,
+    },
     // Sockets push small state deltas. A large frame means something is wrong,
     // and an unbounded one is a memory-exhaustion vector.
     maxHttpBufferSize: 1e6,

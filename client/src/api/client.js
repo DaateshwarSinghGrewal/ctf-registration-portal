@@ -87,9 +87,14 @@ export async function assertApiReachable() {
     await request('/health', { timeoutMs: 4000, notifyOnUnauthorized: false })
   } catch (error) {
     if (error.code === 'network' || error.code === 'timeout') {
+      // A CORS rejection is opaque to fetch — it looks exactly like an
+      // unreachable host. Both causes are named, because the common one in
+      // development is neither: Vite moves to another port when its usual one is
+      // taken, and the new origin is not on the API's allow-list.
       throw new ApiError(
-        'Cannot reach the server, so sign-in cannot start. Make sure the API is running at ' +
-          `${API_BASE_URL || 'this site’s own origin'} and try again.`,
+        `Sign-in cannot start — no response from the API at ${API_BASE_URL || "this site’s own origin"}. ` +
+          `Either it is not running, or this page's origin (${window.location.origin}) ` +
+          'is not in its allowed origins.',
         { code: error.code }
       )
     }

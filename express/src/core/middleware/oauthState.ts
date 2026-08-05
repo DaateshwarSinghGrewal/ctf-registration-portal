@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import { env } from "../../config/env.js";
+import { env, isOriginAllowed } from "../../config/env.js";
 
 /**
  * Stateless CSRF protection for the OAuth callback.
@@ -22,6 +22,8 @@ import { env } from "../../config/env.js";
  */
 
 const STATE_COOKIE = "oauth_state";
+/** Records which site origin started the flow, so the callback returns there. */
+export const ORIGIN_COOKIE = "oauth_origin";
 const STATE_TTL_MS = 10 * 60 * 1000;
 
 const STATE_COOKIE_OPTIONS = {
@@ -33,15 +35,48 @@ const STATE_COOKIE_OPTIONS = {
 } as const;
 
 /**
+ * The origin of the page that started sign-in, if it is one we allow.
+ *
+ * Read from Referer, not Origin: a top-level GET navigation — which is what
+ * sign-in is — generally carries no Origin header.
+ *
+ * Every candidate goes through isOriginAllowed, so this can only ever name an
+ * origin the API already trusts. Skipping that check would turn the OAuth
+ * callback into an open redirect.
+ */
+function callerOrigin(req: Request): string | null {
+  const referer = req.get("referer");
+  if (!referer) return null;
+
+  try {
+    const { origin } = new URL(referer);
+    return isOriginAllowed(origin) ? origin : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Issues the nonce and hands it to Passport as the `state` parameter.
  *
  * Passport reads options from the handler it is given, so the value is stashed
  * on the request for the authenticate call that follows to pick up.
+ *
+ * The caller's origin is recorded alongside it. Without that, the callback can
+ * only redirect to the single canonical FRONTEND_URL — so signing in from a Vite
+ * dev server that had to move to another port would deposit the user on a port
+ * with nothing serving it.
  */
 export function issueOAuthState(req: Request, res: Response, next: NextFunction): void {
   const nonce = crypto.randomBytes(32).toString("base64url");
 
   res.cookie(STATE_COOKIE, nonce, { ...STATE_COOKIE_OPTIONS, maxAge: STATE_TTL_MS });
+
+  const origin = callerOrigin(req);
+  if (origin) {
+    res.cookie(ORIGIN_COOKIE, origin, { ...STATE_COOKIE_OPTIONS, maxAge: STATE_TTL_MS });
+  }
+
   req.oauthState = nonce;
 
   next();
@@ -53,7 +88,9 @@ export function issueOAuthState(req: Request, res: Response, next: NextFunction)
  * the callback is a top-level navigation, so a JSON body would render as raw
  * text in the address bar.
  */
-export function verifyOAuthState(onFailure: (res: Response, message: string) => void): RequestHandler {
+export function verifyOAuthState(
+  onFailure: (req: Request, res: Response, message: string) => void
+): RequestHandler {
   return (req: Request, res: Response, next: NextFunction): void => {
     const expected: unknown = req.cookies?.[STATE_COOKIE];
     const received = req.query.state;
@@ -69,7 +106,7 @@ export function verifyOAuthState(onFailure: (res: Response, message: string) => 
       expected.length !== received.length ||
       !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(received))
     ) {
-      onFailure(res, "Sign-in session expired or was tampered with. Please try again.");
+      onFailure(req, res, "Sign-in session expired or was tampered with. Please try again.");
       return;
     }
 

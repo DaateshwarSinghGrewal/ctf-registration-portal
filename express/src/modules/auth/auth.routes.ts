@@ -60,7 +60,7 @@ router.get(
       { session: false },
       (error: unknown, user: Express.User | false | null) => {
         if (error || !user) {
-          redirectWithError(res, "Google sign-in was cancelled or failed.");
+          redirectWithError(req, res, "Google sign-in was cancelled or failed.");
           return;
         }
         req.user = user;

@@ -1,7 +1,7 @@
 import express, { type Express } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import { env } from "./config/env.js";
+import { env, isOriginAllowed } from "./config/env.js";
 import passport from "./config/passport.js";
 import { asyncHandler } from "./core/http/asyncHandler.js";
 import { authenticateUser } from "./core/middleware/authenticateUser.js";
@@ -35,8 +35,15 @@ export function createApp(): Express {
   app.disable("x-powered-by");
 
   // The SPA is on a different origin and authenticates with a cookie, so the
-  // browser needs both an explicit origin and credentials.
-  app.use(cors({ origin: env.frontendUrls, credentials: true }));
+  // browser needs both an explicit origin and credentials. A callback rather
+  // than a fixed list so development tolerates Vite changing its port — see
+  // isOriginAllowed.
+  app.use(
+    cors({
+      origin: (origin, callback) => callback(null, isOriginAllowed(origin)),
+      credentials: true,
+    })
+  );
 
   // Bounded: the largest legitimate request here is a profile form.
   app.use(express.json({ limit: "100kb" }));

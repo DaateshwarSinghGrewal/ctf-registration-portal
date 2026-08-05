@@ -109,3 +109,27 @@ export const env = {
     secure: cookieSameSite === "none" || isProduction,
   },
 } as const;
+
+/** localhost on any port, over http or https, including the IPv6 loopback. */
+const LOOPBACK_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+
+/**
+ * Decides whether a browser origin may call the API.
+ *
+ * Production is strict: only the origins in FRONTEND_URL.
+ *
+ * Development additionally accepts any loopback origin, whatever the port. Vite
+ * silently moves to 5174 when 5173 is taken ("Port 5173 is in use, trying
+ * another one…"), and with a fixed allow-list every request from the new port is
+ * CORS-blocked. The browser reports a blocked request identically to an
+ * unreachable one, so this surfaces as "cannot reach the server" while the
+ * server is plainly running — which sends you debugging the wrong thing.
+ *
+ * A missing Origin header is allowed through: that is a same-origin navigation,
+ * curl, or a health probe, none of which the browser applies CORS to.
+ */
+export function isOriginAllowed(origin: string | undefined): boolean {
+  if (!origin) return true;
+  if (env.frontendUrls.includes(origin)) return true;
+  return !env.isProduction && LOOPBACK_ORIGIN.test(origin);
+}

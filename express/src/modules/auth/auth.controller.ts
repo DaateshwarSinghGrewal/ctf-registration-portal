@@ -1,8 +1,9 @@
 import type { Request, Response } from "express";
-import { env } from "../../config/env.js";
+import { env, isOriginAllowed } from "../../config/env.js";
 import { ApiError } from "../../core/http/ApiError.js";
 import { ok } from "../../core/http/respond.js";
 import { TOKEN_COOKIE } from "../../core/middleware/authenticateUser.js";
+import { ORIGIN_COOKIE } from "../../core/middleware/oauthState.js";
 import { logger } from "../../core/logger.js";
 import { recordAudit } from "../audit/audit.service.js";
 import { AuditAction } from "../audit/audit.types.js";
@@ -28,14 +29,38 @@ const COOKIE_OPTIONS = {
 } as const;
 
 /**
+ * Where to send the browser back to.
+ *
+ * Prefers the origin that started sign-in, recorded by issueOAuthState, so a
+ * dev server running on a non-default port gets the user back rather than
+ * bouncing them to a port with nothing on it. Re-validated here rather than
+ * trusted from the cookie, so a tampered value cannot redirect off-site.
+ *
+ * Falls back to the canonical FRONTEND_URL, which is what production uses.
+ */
+function siteOrigin(req: Request): string {
+  const recorded: unknown = req.cookies?.[ORIGIN_COOKIE];
+
+  if (typeof recorded === "string" && isOriginAllowed(recorded)) {
+    return recorded;
+  }
+
+  return env.frontendUrl;
+}
+
+/**
  * Builds an absolute URL on the frontend origin.
  *
  * The OAuth callback is a top-level browser navigation, so a failure has to come
  * back as a redirect the SPA can render — a JSON body would be shown to the user
  * as raw text on the API's domain.
  */
-export function frontendUrl(path: string, params?: Record<string, string>): string {
-  const url = new URL(path, env.frontendUrl);
+export function frontendUrl(
+  req: Request,
+  path: string,
+  params?: Record<string, string>
+): string {
+  const url = new URL(path, siteOrigin(req));
   for (const [key, value] of Object.entries(params ?? {})) {
     url.searchParams.set(key, value);
   }
@@ -43,15 +68,16 @@ export function frontendUrl(path: string, params?: Record<string, string>): stri
 }
 
 /** Shared failure exit for the whole OAuth flow. */
-export function redirectWithError(res: Response, message: string): void {
-  res.redirect(frontendUrl("/auth", { error: message }));
+export function redirectWithError(req: Request, res: Response, message: string): void {
+  res.clearCookie(ORIGIN_COOKIE, { path: "/auth", domain: env.cookie.domain });
+  res.redirect(frontendUrl(req, "/auth", { error: message }));
 }
 
 export async function googleCallback(req: Request, res: Response): Promise<void> {
   const profile = req.user as unknown as GoogleProfile | undefined;
 
   if (!profile?.googleId || !profile.email) {
-    redirectWithError(res, "Google authentication failed. Please try again.");
+    redirectWithError(req, res, "Google authentication failed. Please try again.");
     return;
   }
 
@@ -78,12 +104,16 @@ export async function googleCallback(req: Request, res: Response): Promise<void>
       ipAddress: req.ip ?? null,
     });
 
-    res.redirect(frontendUrl("/team"));
+    // The recorded origin has served its purpose; a stale one must not steer a
+    // later sign-in from a different port.
+    const target = frontendUrl(req, "/team");
+    res.clearCookie(ORIGIN_COOKIE, { path: "/auth", domain: env.cookie.domain });
+    res.redirect(target);
   } catch (error) {
     // Handled here rather than delegated to errorHandler: that would send JSON,
     // and this response is a browser navigation.
     logger.error("Google callback failed", error);
-    redirectWithError(res, "Sign-in failed. Please try again.");
+    redirectWithError(req, res, "Sign-in failed. Please try again.");
   }
 }
 
