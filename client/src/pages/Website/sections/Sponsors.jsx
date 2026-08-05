@@ -29,7 +29,7 @@ export default function Sponsors() {
       <StarfieldBackground density={40} glow={false} />
       
       <div className="relative z-10 mx-auto flex w-full max-w-screen-lg flex-col items-center space-y-16">
-        <div className="text-center w-full max-w-4xl">
+        <div className="text-center w-full max-w-4xl pb-18">
           <SectionHeading 
             eyebrow="Our Partners" 
             title="Backed by the" 

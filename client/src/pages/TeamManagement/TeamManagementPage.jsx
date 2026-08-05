@@ -31,6 +31,58 @@ export default function TeamManagementPage() {
   const [teamNameInput, setTeamNameInput] = useState('')
   const [teamCodeInput, setTeamCodeInput] = useState('')
 
+  const [playerDetails, setPlayerDetails] = useState({
+    name: '',
+    phone: '',
+    year: '',
+    branch: '',
+    rollNumber: ''
+  })
+
+  const handlePlayerDetailChange = (e) => {
+    const { name, value } = e.target
+    setPlayerDetails(prev => ({ ...prev, [name]: value }))
+  }
+
+  const renderPlayerFields = () => (
+    <div className="flex flex-col gap-4 border-t border-white/10 pt-4 mt-2">
+      <p className="text-xs font-heading tracking-widest text-neutral-400 uppercase">Player Details</p>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-2">
+          <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Full Name</label>
+          <input type="text" name="name" required value={playerDetails.name} onChange={handlePlayerDetailChange} placeholder="John Doe" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Phone Number</label>
+          <input type="tel" name="phone" required value={playerDetails.phone} onChange={handlePlayerDetailChange} placeholder="+1 234 567 8900" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="flex flex-col gap-2">
+          <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Year</label>
+          <select name="year" required value={playerDetails.year} onChange={handlePlayerDetailChange} className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amethyst transition-all appearance-none">
+            <option value="" disabled className="bg-void text-neutral-500">Select...</option>
+            <option value="1" className="bg-void">1st Year</option>
+            <option value="2" className="bg-void">2nd Year</option>
+            <option value="3" className="bg-void">3rd Year</option>
+            <option value="4" className="bg-void">4th Year</option>
+            <option value="5" className="bg-void">5th Year</option>
+          </select>
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Branch</label>
+          <input type="text" name="branch" required value={playerDetails.branch} onChange={handlePlayerDetailChange} placeholder="e.g. CSE" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Roll No.</label>
+          <input type="text" name="rollNumber" required value={playerDetails.rollNumber} onChange={handlePlayerDetailChange} placeholder="e.g. 102203..." className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+        </div>
+      </div>
+    </div>
+  )
+
   // Toast Helper
   const showToast = (msg) => {
     setToastMessage(msg)
@@ -305,6 +357,7 @@ export default function TeamManagementPage() {
                     className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst focus:ring-1 focus:ring-amethyst transition-all"
                   />
                 </div>
+                {renderPlayerFields()}
                 <Button variant="pill" type="submit" className="w-full justify-center">Initialize Squad</Button>
               </form>
             </motion.div>
@@ -339,6 +392,7 @@ export default function TeamManagementPage() {
                     className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-neutral-600 font-brand tracking-widest uppercase focus:outline-none focus:border-amethyst focus:ring-1 focus:ring-amethyst transition-all"
                   />
                 </div>
+                {renderPlayerFields()}
                 <Button variant="pill" type="submit" className="w-full justify-center">Infiltrate Squad</Button>
               </form>
             </motion.div>

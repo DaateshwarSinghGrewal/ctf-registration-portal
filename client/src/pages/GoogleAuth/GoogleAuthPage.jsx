@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import PanelCard from '../../components/ui/PanelCard.jsx'
-import ConstellationGrid from '../../components/ui/ConstellationGrid.jsx'
+import NeonMesh from '../../components/ui/neon-mesh.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 
 /**
@@ -44,7 +44,7 @@ export default function GoogleAuthPage() {
 
   return (
     <main className="section-shell relative flex min-h-[calc(100vh-74px)] flex-col items-center justify-center px-6 py-24">
-      <ConstellationGrid />
+      <NeonMesh className="absolute inset-0 z-0" />
 
       <div className="relative z-10 flex w-full max-w-[480px] flex-col items-center rounded-2xl border border-amethyst/10 bg-[#0c0814] p-10 shadow-2xl sm:p-14">
         
