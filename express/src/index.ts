@@ -1,71 +1,17 @@
-// Must be first: loads .env and validates required vars before any module
-// that reads process.env at import time (db pool, redis client, passport).
-import { env } from "./config/env.js";
+/**
+ * Entry point.
+ *
+ * `./config/env.js` must be imported first: it loads .env and validates it
+ * before any module that reads process.env at import time — the database pool,
+ * the redis client, the passport strategy — gets a chance to see an empty value
+ * and fail obscurely later.
+ */
+import "./config/env.js";
 
-import express from "express";
-import cookieParser from "cookie-parser";
-import cors from "cors";
-import { redis } from "../../shared/db/redis";
-import { createRateLimiter } from "./middleware/rateLimiter";
-import partyRouter from "./routes/party.routes";
-import authRouter from "./routes/auth.routes";
-import passport from "./config/passport";
-import { authenticateUser } from "./middleware/authenticateUser";
-import adminRouter from "./routes/admin.routes";
+import { logger } from "./core/logger.js";
+import { startServer } from "./server.js";
 
-const app = express();
-
-// Hosting platforms (Render, Railway, Fly, …) terminate TLS at a proxy and
-// forward over plain HTTP. Without this, Express sees an insecure request
-// and refuses to send the Secure session cookie.
-app.set("trust proxy", 1);
-
-// The SPA is served from a different origin and authenticates with an
-// httpOnly cookie, so the browser needs both an explicit origin and
-// credentials. env.frontendUrls may list several (e.g. prod + localhost).
-app.use(
-  cors({
-    origin: env.frontendUrls,
-    credentials: true,
-  })
-);
-
-app.use(express.json());
-app.use(cookieParser());
-app.use(passport.initialize()); // Stateless — no passport.session()
-
-const flagLimiter = createRateLimiter(redis, {
-  windowMs: 60_000,
-  max: 5,
-  keyPrefix: "rl:flag",
-  message: "Too many flag attempts. Wait a minute.",
-});
-
-// Auth endpoints (login, callback, logout, /me)
-app.use("/auth", authRouter);
-
-// Admin endpoints (user management, party overrides) — admin-only
-app.use("/admin", adminRouter);
-
-// Protected party management endpoints
-app.use("/party", authenticateUser, partyRouter);
-
-// /me endpoint now lives in auth.routes.ts as GET /auth/me
-
-app.post("/submit", flagLimiter, (req, res) => {
-  res.json({ ok: true, message: "flag received" });
-});
-
-app.get("/test-db", async (req, res) => {
-  try {
-    const { default: pool } = await import("../../shared/db/pg.js");
-    const result = await pool.query("SELECT * FROM user_auth LIMIT 1");
-    res.json({ ok: true, data: result.rows });
-  } catch (error: any) {
-    res.status(500).json({ ok: false, error: error.message, code: error.code });
-  }
-});
-
-app.listen(env.port, () => {
-  console.log(` Server running on http://localhost:${env.port}`);
+startServer().catch((error: unknown) => {
+  logger.error("Failed to start server", error);
+  process.exit(1);
 });

@@ -1,46 +1,57 @@
 /**
- * Party (team) endpoints — express/src/routes/party.routes.ts
+ * Team (party) endpoints — express/src/modules/party/party.routes.ts
  *
- * Every route below sits behind authenticateUser, so all of them require a
- * valid session cookie. Controllers wrap results as { success, data }; these
- * helpers return the unwrapped `data` payload.
+ * Every route here sits behind authenticateUser, so all of them need a valid
+ * session cookie. Controllers reply with { success, message, data }; these
+ * helpers return the unwrapped `data`.
+ *
+ * The UI calls them teams; the API calls them parties. Same entity — the paths
+ * were kept as-is so nothing had to be renamed across the boundary.
  */
 
 import { api } from './client.js'
 
 /**
- * POST /party/create
- * The backend generates the invite code and returns it as the party `id`.
- * `password` is optional — omitting it creates a team anyone with the code
- * can join.
+ * GET /party/me — the team the signed-in user belongs to, or null.
+ *
+ * This is the source of truth for "am I in a team?". The invite code used to be
+ * cached in localStorage because no such endpoint existed, which went stale the
+ * moment the user was removed from a team while away.
  */
-export async function createParty({ name, password, maxPlayers } = {}) {
-  const payload = await api.post('/party/create', { name, password, maxPlayers })
+export async function getMyParty({ signal } = {}) {
+  const payload = await api.get('/party/me', { signal })
   return payload?.data ?? null
 }
 
 /**
- * POST /party/join
- * The controller accepts the code as either `partyId` or `inviteCode`.
+ * POST /party/create — the backend generates the invite code and returns it as
+ * the team's `id`. Requires a completed profile.
  */
+export async function createParty({ name, password, maxPlayers, visibility } = {}) {
+  const payload = await api.post('/party/create', { name, password, maxPlayers, visibility })
+  return payload?.data ?? null
+}
+
+/** POST /party/join — instant join for PUBLIC teams. Codes are case-insensitive. */
 export async function joinParty({ inviteCode, password } = {}) {
   const payload = await api.post('/party/join', { inviteCode, password })
   return payload?.data ?? null
 }
 
-/** GET /party/:partyId */
-export async function getParty(partyId, { signal } = {}) {
-  const payload = await api.get(`/party/${encodeURIComponent(partyId)}`, { signal })
-  return payload?.data ?? null
-}
-
-/** POST /party/leave/:partyId */
+/** POST /party/leave/:partyId — the caller leaves their own team. */
 export function leaveParty(partyId) {
   return api.post(`/party/leave/${encodeURIComponent(partyId)}`)
 }
 
-/** POST /party/kick — leader only. */
-export async function kickPlayer({ partyId, targetUserId }) {
-  const payload = await api.post('/party/kick', { partyId, targetUserId })
+/** DELETE /party/:partyId — leader disbands the team. */
+export function deleteParty(partyId) {
+  return api.delete(`/party/${encodeURIComponent(partyId)}`)
+}
+
+/** DELETE /party/:partyId/members/:userId — leader removes a member. */
+export async function removeMember({ partyId, userId }) {
+  const payload = await api.delete(
+    `/party/${encodeURIComponent(partyId)}/members/${encodeURIComponent(userId)}`
+  )
   return payload?.data ?? null
 }

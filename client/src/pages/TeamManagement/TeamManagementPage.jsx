@@ -1,27 +1,36 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Copy, Plus, LogIn, LogOut, Trash2, X, Crown, User as UserIcon } from 'lucide-react'
 import Button from '../../components/ui/Button.jsx'
 import NoiseDarkPurpleGradientWithSquares from '../../components/ui/noise-dark-blue-gradient-with-squares.jsx'
 import { GradientHeading } from '../../components/ui/gradient-heading.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
+import { useTeam } from '../../hooks/useTeam.js'
+import { getProfile } from '../../api/profile.js'
 
-// --- Mock Data & Helpers ---
-const generateCode = () => Math.random().toString(36).substring(2, 8).toUpperCase()
+/**
+ * Team Management — the post-sign-in command centre.
+ *
+ * Every value on this screen comes from the API. The team, its invite code and
+ * its roster are read from GET /party/me and kept current by socket events, so
+ * two people in the same team see the same thing and a change by one appears for
+ * the other without a reload.
+ */
 
-const DUMMY_MEMBERS = [
-  { id: '1', username: 'NeonHacker', role: 'Captain' },
-  { id: '2', username: 'CipherByte', role: 'Member' },
-  { id: '3', username: 'GlitchMaster', role: 'Member' },
-]
+const EMPTY_PLAYER_DETAILS = {
+  fullName: '',
+  phone: '',
+  discordUsername: '',
+  year: '',
+  branch: '',
+  rollNumber: ''
+}
 
 export default function TeamManagementPage() {
   const { user, signOut } = useAuth()
-  
-  // -- Core State --
-  // If party is null, show State 1 (Solo). If party exists, show State 2 (Team Dashboard).
-  const [party, setParty] = useState(null)
-  
+  const { team, isLoading, loadError, onlineUserIds, isLeader, leave, disband, kick, create, join } =
+    useTeam()
+
   // -- UI State --
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false)
@@ -30,29 +39,64 @@ export default function TeamManagementPage() {
   // -- Form State --
   const [teamNameInput, setTeamNameInput] = useState('')
   const [teamCodeInput, setTeamCodeInput] = useState('')
+  const [playerDetails, setPlayerDetails] = useState(EMPTY_PLAYER_DETAILS)
+  const [formError, setFormError] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [busyMemberId, setBusyMemberId] = useState(null)
 
-  const [playerDetails, setPlayerDetails] = useState({
-    name: '',
-    phone: '',
-    discordUsername: '',
-    year: '',
-    branch: '',
-    rollNumber: ''
-  })
+  /**
+   * Pre-fills the profile form for a returning user.
+   *
+   * Without this, someone who already registered has to retype all six fields to
+   * join a second team, and a typo would collide with their own roll number.
+   */
+  useEffect(() => {
+    const controller = new AbortController()
+
+    getProfile({ signal: controller.signal })
+      .then((profile) => {
+        if (!profile) return
+        setPlayerDetails({
+          fullName: profile.fullName,
+          phone: profile.phone,
+          discordUsername: profile.discordUsername,
+          year: String(profile.year),
+          branch: profile.branch,
+          rollNumber: profile.rollNumber
+        })
+      })
+      .catch(() => {
+        // No profile yet, or the read failed — the form stays empty and the user
+        // fills it in. Not worth surfacing as an error.
+      })
+
+    return () => controller.abort()
+  }, [])
 
   const handlePlayerDetailChange = (e) => {
     const { name, value } = e.target
-    setPlayerDetails(prev => ({ ...prev, [name]: value }))
+    setPlayerDetails((prev) => ({ ...prev, [name]: value }))
   }
+
+  const showToast = useCallback((msg) => {
+    setToastMessage(msg)
+    setTimeout(() => setToastMessage(''), 3000)
+  }, [])
+
+  const closeModals = useCallback(() => {
+    setIsCreateModalOpen(false)
+    setIsJoinModalOpen(false)
+    setFormError(null)
+  }, [])
 
   const renderPlayerFields = () => (
     <div className="flex flex-col gap-4 border-t border-white/10 pt-4 mt-2">
       <p className="text-xs font-heading tracking-widest text-neutral-400 uppercase">Player Details</p>
-      
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Full Name</label>
-          <input type="text" name="name" required value={playerDetails.name} onChange={handlePlayerDetailChange} placeholder="e.g. Rishank Sharma" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+          <input type="text" name="fullName" required value={playerDetails.fullName} onChange={handlePlayerDetailChange} placeholder="e.g. Rishank Sharma" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Phone Number</label>
@@ -84,74 +128,113 @@ export default function TeamManagementPage() {
           <input type="text" name="rollNumber" required value={playerDetails.rollNumber} onChange={handlePlayerDetailChange} placeholder="e.g. 1025170..." className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
         </div>
       </div>
+
+      {formError ? (
+        <p role="alert" className="font-body text-sm text-red-400">
+          {formError}
+        </p>
+      ) : null}
     </div>
   )
 
-  // Toast Helper
-  const showToast = (msg) => {
-    setToastMessage(msg)
-    setTimeout(() => setToastMessage(''), 3000)
-  }
-
-  // --- Handlers (Mocked functionality) ---
-  const handleCreateTeam = (e) => {
+  // --- Handlers ---
+  const handleCreateTeam = async (e) => {
     e.preventDefault()
-    if (!teamNameInput.trim()) return
-    const newTeam = {
-      id: generateCode(),
-      name: teamNameInput,
-      maxPlayers: 4,
-      members: [{ id: 'me', username: user?.username || 'You', role: 'Captain' }]
+    if (isSubmitting) return
+
+    const name = teamNameInput.trim()
+    if (name.length < 3) {
+      setFormError('Squad name must be at least 3 characters.')
+      return
     }
-    setParty(newTeam)
-    setIsCreateModalOpen(false)
-    setTeamNameInput('')
-    showToast('Team Created Successfully!')
+
+    setFormError(null)
+    setIsSubmitting(true)
+    try {
+      await create({ name, playerDetails })
+      closeModals()
+      setTeamNameInput('')
+      showToast('Team created successfully!')
+    } catch (error) {
+      // Server-side message: the API distinguishes a name clash from an invalid
+      // roll number from a closed registration, and each is actionable.
+      setFormError(error.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleJoinTeam = (e) => {
+  const handleJoinTeam = async (e) => {
     e.preventDefault()
-    if (!teamCodeInput.trim()) return
-    const joinedTeam = {
-      id: teamCodeInput.toUpperCase(),
-      name: 'The Cyber Syndicate',
-      maxPlayers: 4,
-      members: [
-        ...DUMMY_MEMBERS,
-        { id: 'me', username: user?.username || 'You', role: 'Member' }
-      ]
+    if (isSubmitting) return
+
+    const inviteCode = teamCodeInput.trim().toUpperCase()
+    if (inviteCode.length === 0) {
+      setFormError('Enter the team code.')
+      return
     }
-    setParty(joinedTeam)
-    setIsJoinModalOpen(false)
-    setTeamCodeInput('')
-    showToast('Joined Team Successfully!')
+
+    setFormError(null)
+    setIsSubmitting(true)
+    try {
+      await join({ inviteCode, playerDetails })
+      closeModals()
+      setTeamCodeInput('')
+      showToast('Joined team successfully!')
+    } catch (error) {
+      setFormError(error.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(party?.id)
-    showToast('Team Code Copied!')
+  const handleCopyCode = async () => {
+    if (!team) return
+    try {
+      await navigator.clipboard.writeText(team.id)
+      showToast('Team code copied!')
+    } catch {
+      // Clipboard access is denied outside a secure context; the code is
+      // on screen to copy by hand.
+      showToast('Could not copy — select the code manually.')
+    }
   }
 
-  const handleLeaveTeam = () => {
-    setParty(null)
-    showToast('You left the team.')
+  const handleLeaveTeam = async () => {
+    setIsSubmitting(true)
+    try {
+      await leave()
+      showToast('You left the team.')
+    } catch (error) {
+      showToast(error.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleDeleteTeam = () => {
-    setParty(null)
-    showToast('Team disbanded.')
+  const handleDeleteTeam = async () => {
+    setIsSubmitting(true)
+    try {
+      await disband()
+      showToast('Team disbanded.')
+    } catch (error) {
+      showToast(error.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleRemoveMember = (memberId) => {
-    setParty(prev => ({
-      ...prev,
-      members: prev.members.filter(m => m.id !== memberId)
-    }))
-    showToast('Member removed.')
+  const handleRemoveMember = async (userId) => {
+    setBusyMemberId(userId)
+    try {
+      await kick(userId)
+      showToast('Member removed.')
+    } catch (error) {
+      showToast(error.message)
+    } finally {
+      setBusyMemberId(null)
+    }
   }
-
-  // Determine current user's role in the mock party
-  const currentUserRole = party?.members?.find(m => m.id === 'me')?.role || 'Member'
 
   return (
     <main className="section-shell relative flex min-h-[calc(100vh-74px)] flex-col items-center justify-center px-6 py-12 bg-void">
@@ -172,7 +255,7 @@ export default function TeamManagementPage() {
       </AnimatePresence>
 
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col gap-10">
-        
+
         {/* Header */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-white/10 pb-8">
           <div>
@@ -186,9 +269,25 @@ export default function TeamManagementPage() {
           </Button>
         </div>
 
+        {/* --- Loading the team from the API --- */}
+        {isLoading && (
+          <div className="flex flex-col items-center gap-4 mt-8">
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-amethyst/60 to-transparent animate-pulse" />
+            <p className="font-heading text-xs uppercase tracking-[0.3em] text-crystal-light">
+              Loading your squad
+            </p>
+          </div>
+        )}
+
+        {!isLoading && loadError && (
+          <div className="surface-card p-6 text-center border-red-500/30 bg-red-950/20">
+            <p role="alert" className="font-body text-sm text-red-400">{loadError}</p>
+          </div>
+        )}
+
         {/* --- STATE 1: No Team --- */}
-        {!party && (
-          <motion.div 
+        {!isLoading && !loadError && !team && (
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center gap-10 mt-8"
@@ -200,7 +299,7 @@ export default function TeamManagementPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-2xl">
               {/* Create Team Card */}
-              <div 
+              <div
                 onClick={() => setIsCreateModalOpen(true)}
                 className="surface-card flex flex-col items-center justify-center p-10 cursor-pointer group hover:border-amethyst/60 transition-all duration-300"
               >
@@ -212,7 +311,7 @@ export default function TeamManagementPage() {
               </div>
 
               {/* Join Team Card */}
-              <div 
+              <div
                 onClick={() => setIsJoinModalOpen(true)}
                 className="surface-card flex flex-col items-center justify-center p-10 cursor-pointer group hover:border-amethyst/60 transition-all duration-300"
               >
@@ -227,8 +326,8 @@ export default function TeamManagementPage() {
         )}
 
         {/* --- STATE 2: In a Team --- */}
-        {party && (
-          <motion.div 
+        {!isLoading && team && (
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col gap-10"
@@ -236,19 +335,19 @@ export default function TeamManagementPage() {
             {/* Team Banner */}
             <div className="surface-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-void via-amethyst/5 to-void border-amethyst/30 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-amethyst/10 blur-[80px] pointer-events-none" />
-              
+
               <div className="flex flex-col items-center md:items-start z-10">
                 <p className="text-xs font-heading tracking-[0.2em] text-amethyst mb-2">YOUR SQUAD</p>
                 <h2 className="text-3xl md:text-5xl font-heading font-bold text-white tracking-widest uppercase text-center md:text-left drop-shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                  {party.name}
+                  {team.name}
                 </h2>
               </div>
 
               <div className="flex flex-col items-center bg-black/40 border border-white/10 rounded-xl p-4 backdrop-blur-sm z-10">
                 <p className="text-[10px] uppercase tracking-widest text-neutral-400 mb-1">Team Code</p>
                 <div className="flex items-center gap-3">
-                  <span className="font-brand text-2xl text-amethyst-bright tracking-wider">{party.id}</span>
-                  <button 
+                  <span className="font-brand text-2xl text-amethyst-bright tracking-wider">{team.id}</span>
+                  <button
                     onClick={handleCopyCode}
                     className="p-2 hover:bg-white/10 rounded-md transition-colors group"
                     title="Copy Code"
@@ -261,35 +360,50 @@ export default function TeamManagementPage() {
 
             {/* Roster & Controls */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              
+
               {/* Members List */}
               <div className="lg:col-span-2 flex flex-col gap-4">
                 <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                  <h3 className="font-heading text-lg tracking-widest text-white">Operatives ({party.members.length}/{party.maxPlayers})</h3>
+                  <h3 className="font-heading text-lg tracking-widest text-white">Operatives ({team.members.length}/{team.maxPlayers})</h3>
                 </div>
-                
+
                 <div className="flex flex-col gap-3">
-                  {party.members.map((member) => (
-                    <div key={member.id} className="surface-card p-4 flex items-center justify-between bg-black/20 hover:bg-white/5 transition-colors group">
+                  {team.members.map((member) => (
+                    <div key={member.userId} className="surface-card p-4 flex items-center justify-between bg-black/20 hover:bg-white/5 transition-colors group">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-amethyst/20 border border-amethyst/40 flex items-center justify-center">
-                          {member.role === 'Captain' ? (
+                        <div className="w-10 h-10 rounded-full bg-amethyst/20 border border-amethyst/40 flex items-center justify-center relative">
+                          {member.isLeader ? (
                             <Crown className="w-5 h-5 text-fuchsia-400" />
                           ) : (
                             <UserIcon className="w-5 h-5 text-amethyst-light" />
                           )}
+                          {/* Live presence, driven by presence:update */}
+                          {onlineUserIds.includes(member.userId) ? (
+                            <span
+                              title="Online"
+                              className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-void"
+                            />
+                          ) : null}
                         </div>
                         <div>
-                          <p className="font-heading text-white tracking-wider">{member.username}</p>
-                          <p className="text-xs font-body text-neutral-500 uppercase">{member.role}</p>
+                          <p className="font-heading text-white tracking-wider">
+                            {member.username}
+                            {member.userId === user?.userId ? (
+                              <span className="ml-2 text-[10px] font-body uppercase tracking-widest text-neutral-500">You</span>
+                            ) : null}
+                          </p>
+                          <p className="text-xs font-body text-neutral-500 uppercase">
+                            {member.isLeader ? 'Captain' : 'Member'}
+                          </p>
                         </div>
                       </div>
-                      
+
                       {/* Captain Controls to remove others */}
-                      {currentUserRole === 'Captain' && member.id !== 'me' && (
-                        <button 
-                          onClick={() => handleRemoveMember(member.id)}
-                          className="opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-md transition-all"
+                      {isLeader && member.userId !== user?.userId && (
+                        <button
+                          onClick={() => handleRemoveMember(member.userId)}
+                          disabled={busyMemberId === member.userId}
+                          className="opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-md transition-all disabled:opacity-40"
                           title="Kick Operative"
                         >
                           <X className="w-5 h-5" />
@@ -303,13 +417,14 @@ export default function TeamManagementPage() {
               {/* Action Panel */}
               <div className="surface-card p-6 flex flex-col gap-6 h-fit bg-black/40">
                 <h3 className="font-heading text-lg tracking-widest text-white border-b border-white/10 pb-4">Actions</h3>
-                
-                {currentUserRole === 'Captain' ? (
+
+                {isLeader ? (
                   <div className="flex flex-col gap-4">
                     <p className="text-xs font-body text-neutral-400">As the Captain, you command this squad. Disbanding will remove all operatives.</p>
-                    <button 
+                    <button
                       onClick={handleDeleteTeam}
-                      className="w-full py-3 flex items-center justify-center gap-2 border border-red-500/50 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors font-heading tracking-widest uppercase text-sm"
+                      disabled={isSubmitting}
+                      className="w-full py-3 flex items-center justify-center gap-2 border border-red-500/50 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors font-heading tracking-widest uppercase text-sm disabled:opacity-50"
                     >
                       <Trash2 className="w-4 h-4" /> Disband Team
                     </button>
@@ -317,9 +432,10 @@ export default function TeamManagementPage() {
                 ) : (
                   <div className="flex flex-col gap-4">
                     <p className="text-xs font-body text-neutral-400">You are an operative. Leaving will forfeit your spot in this squad.</p>
-                    <button 
+                    <button
                       onClick={handleLeaveTeam}
-                      className="w-full py-3 flex items-center justify-center gap-2 border border-orange-500/50 text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors font-heading tracking-widest uppercase text-sm"
+                      disabled={isSubmitting}
+                      className="w-full py-3 flex items-center justify-center gap-2 border border-orange-500/50 text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors font-heading tracking-widest uppercase text-sm disabled:opacity-50"
                     >
                       <LogOut className="w-4 h-4" /> Leave Team
                     </button>
@@ -335,26 +451,28 @@ export default function TeamManagementPage() {
       {/* --- MODALS --- */}
       <AnimatePresence>
         {isCreateModalOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
               className="surface-card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8 relative bg-void border border-white/10 shadow-2xl"
             >
-              <button onClick={() => setIsCreateModalOpen(false)} className="absolute top-4 right-4 text-neutral-400 hover:text-white">
+              <button onClick={closeModals} className="absolute top-4 right-4 text-neutral-400 hover:text-white">
                 <X className="w-6 h-6" />
               </button>
               <h2 className="text-2xl font-heading text-white tracking-widest mb-2 uppercase">Create Squad</h2>
               <p className="text-sm font-body text-neutral-400 mb-8">Forge a new team and become the Captain.</p>
-              
+
               <form onSubmit={handleCreateTeam} className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-heading tracking-widest uppercase text-amethyst-light">Squad Name</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     required
+                    minLength={3}
+                    maxLength={100}
                     value={teamNameInput}
                     onChange={(e) => setTeamNameInput(e.target.value)}
                     placeholder="Enter squad name..."
@@ -362,42 +480,46 @@ export default function TeamManagementPage() {
                   />
                 </div>
                 {renderPlayerFields()}
-                <Button variant="pill" type="submit" className="w-full justify-center">Initialize Squad</Button>
+                <Button variant="pill" type="submit" disabled={isSubmitting} className="w-full justify-center disabled:opacity-60">
+                  {isSubmitting ? 'Initializing…' : 'Initialize Squad'}
+                </Button>
               </form>
             </motion.div>
           </motion.div>
         )}
 
         {isJoinModalOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
               className="surface-card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8 relative bg-void border border-white/10 shadow-2xl"
             >
-              <button onClick={() => setIsJoinModalOpen(false)} className="absolute top-4 right-4 text-neutral-400 hover:text-white">
+              <button onClick={closeModals} className="absolute top-4 right-4 text-neutral-400 hover:text-white">
                 <X className="w-6 h-6" />
               </button>
               <h2 className="text-2xl font-heading text-white tracking-widest mb-2 uppercase">Join Squad</h2>
               <p className="text-sm font-body text-neutral-400 mb-8">Enter a valid 6-character code to infiltrate a team.</p>
-              
+
               <form onSubmit={handleJoinTeam} className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-heading tracking-widest uppercase text-amethyst-light">Secret Code</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     required
                     maxLength={6}
                     value={teamCodeInput}
-                    onChange={(e) => setTeamCodeInput(e.target.value)}
-                    placeholder="e.g. X7K9L2"
+                    onChange={(e) => setTeamCodeInput(e.target.value.toUpperCase())}
+                    placeholder="e.g. A1B2C3"
                     className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-neutral-600 font-brand tracking-widest uppercase focus:outline-none focus:border-amethyst focus:ring-1 focus:ring-amethyst transition-all"
                   />
                 </div>
                 {renderPlayerFields()}
-                <Button variant="pill" type="submit" className="w-full justify-center">Infiltrate Squad</Button>
+                <Button variant="pill" type="submit" disabled={isSubmitting} className="w-full justify-center disabled:opacity-60">
+                  {isSubmitting ? 'Infiltrating…' : 'Infiltrate Squad'}
+                </Button>
               </form>
             </motion.div>
           </motion.div>

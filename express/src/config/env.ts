@@ -1,80 +1,111 @@
 import "dotenv/config";
+import { z } from "zod";
 
 /**
- * DATABASE_URL replaces the individual DB_* vars here because that is what
- * the connection pool actually reads (shared/db/pg.ts builds the Pool from a
- * connectionString). The DB_* vars were required but never consumed, so the
- * server refused to boot over unused config while leaving the one variable
- * that matters unvalidated. They remain exported below for compatibility.
+ * Validated configuration. Imported first by src/index.ts so the process
+ * fails fast — before the db pool, redis client or passport strategy read
+ * process.env at import time — with one message listing everything missing,
+ * rather than surfacing as a confusing runtime error later.
+ *
+ * The previous DB_* variables are gone: they were required at boot but never
+ * read by anything (the pool builds from DATABASE_URL), so the server refused
+ * to start over configuration that had no effect.
  */
-const required = [
-  "GOOGLE_CLIENT_ID",
-  "GOOGLE_CLIENT_SECRET",
-  "GOOGLE_REDIRECT_URI",
-  "FRONTEND_URL",
-  "JWT_SECRET",
-  "DATABASE_URL",
-] as const;
 
-const missing = required.filter((key) => !process.env[key]);
-if (missing.length > 0) {
-  console.error(
-    `❌  Missing required environment variables:\n${missing.map((k) => `   • ${k}`).join("\n")}`
+const csv = (value: string): string[] =>
+  value
+    .split(",")
+    .map((entry) => entry.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+
+const schema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  PORT: z.coerce.number().int().positive().default(3000),
+
+  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+
+  GOOGLE_CLIENT_ID: z.string().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().min(1),
+  GOOGLE_REDIRECT_URI: z.url("GOOGLE_REDIRECT_URI must be an absolute URL"),
+
+  /**
+   * Comma-separated so one deployment can serve the hosted site and a local
+   * dev server. The first entry is canonical — it is the post-sign-in
+   * redirect target; the rest only widen the CORS allow-list.
+   */
+  FRONTEND_URL: z.string().min(1).transform(csv).refine((urls) => urls.length > 0, {
+    message: "FRONTEND_URL must contain at least one origin",
+  }),
+
+  /** 32 chars minimum: a short HS256 secret is brute-forceable offline. */
+  JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
+
+  /** Emails promoted to ADMIN on sign-in. Without this nobody can reach /admin. */
+  ADMIN_EMAILS: z
+    .string()
+    .default("")
+    .transform((value) =>
+      value
+        .split(",")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean)
+    ),
+
+  /** Absent = no Redis. Rate limiting falls back to in-memory; sockets stay single-node. */
+  REDIS_URL: z.string().min(1).optional(),
+
+  COOKIE_DOMAIN: z.string().min(1).optional(),
+  COOKIE_SAMESITE: z.enum(["none", "lax", "strict"]).optional(),
+});
+
+const parsed = schema.safeParse(process.env);
+
+if (!parsed.success) {
+  const lines = parsed.error.issues.map(
+    (issue) => `   • ${issue.path.join(".") || "(root)"}: ${issue.message}`
   );
+  console.error(`Invalid environment configuration:\n${lines.join("\n")}`);
   process.exit(1);
 }
 
-const nodeEnv = process.env.NODE_ENV ?? "development";
+const raw = parsed.data;
+const isProduction = raw.NODE_ENV === "production";
 
 /**
- * FRONTEND_URL accepts a comma-separated list so one deployment can serve
- * both the hosted site and a local dev server. The first entry is canonical:
- * it is where the OAuth callback redirects. The rest only widen CORS.
+ * When the SPA and the API sit on different domains the session cookie is
+ * cross-site, and browsers drop a SameSite=Lax cookie on those requests — so
+ * /auth/me would always 401 and sign-in would appear to fail silently.
+ * SameSite=None fixes it, and is only honoured on a Secure cookie.
  */
-const frontendUrls = process.env
-  .FRONTEND_URL!.split(",")
-  .map((url) => url.trim().replace(/\/+$/, ""))
-  .filter(Boolean);
-
-/**
- * When the site and the API are on different domains (e.g. Vercel + a
- * separate API host), the session cookie is cross-site: browsers drop a
- * SameSite=Lax cookie on those requests, so /auth/me would always 401 and
- * sign-in would appear to silently fail. SameSite=None fixes that, and
- * browsers only honour it on a Secure (HTTPS) cookie.
- *
- * Defaults to none+secure in production and lax in development; override
- * with COOKIE_SAMESITE if the API is served from the same domain.
- */
-const cookieSameSite = (process.env.COOKIE_SAMESITE ??
-  (nodeEnv === "production" ? "none" : "lax")) as "none" | "lax" | "strict";
+const cookieSameSite = raw.COOKIE_SAMESITE ?? (isProduction ? "none" : "lax");
 
 export const env = {
-  port: Number(process.env.PORT ?? 3000),
-  nodeEnv,
+  nodeEnv: raw.NODE_ENV,
+  isProduction,
+  port: raw.PORT,
 
-  googleClientId: process.env.GOOGLE_CLIENT_ID!,
-  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-  googleRedirectUri: process.env.GOOGLE_REDIRECT_URI!,
+  databaseUrl: raw.DATABASE_URL,
+
+  google: {
+    clientId: raw.GOOGLE_CLIENT_ID,
+    clientSecret: raw.GOOGLE_CLIENT_SECRET,
+    redirectUri: raw.GOOGLE_REDIRECT_URI,
+  },
 
   /** Canonical site origin — the post-sign-in redirect target. */
-  frontendUrl: frontendUrls[0]!,
-  /** Every origin allowed through CORS. */
-  frontendUrls,
+  frontendUrl: raw.FRONTEND_URL[0]!,
+  /** Every origin allowed through CORS and the Socket.IO handshake. */
+  frontendUrls: raw.FRONTEND_URL,
 
-  jwtSecret: process.env.JWT_SECRET!,
+  jwtSecret: raw.JWT_SECRET,
+  adminEmails: raw.ADMIN_EMAILS,
 
-  cookieDomain: process.env.COOKIE_DOMAIN || undefined,
-  cookieSameSite,
-  // SameSite=None is ignored by browsers unless the cookie is also Secure.
-  cookieSecure: cookieSameSite === "none" || nodeEnv === "production",
+  redisUrl: raw.REDIS_URL,
 
-  databaseUrl: process.env.DATABASE_URL!,
-
-  // Optional: unused by the pool, kept so nothing importing them breaks.
-  dbUser: process.env.DB_USER,
-  dbHost: process.env.DB_HOST,
-  dbName: process.env.DB_NAME,
-  dbPassword: process.env.DB_PASSWORD,
-  dbPort: process.env.DB_PORT ? Number(process.env.DB_PORT) : undefined,
+  cookie: {
+    domain: raw.COOKIE_DOMAIN,
+    sameSite: cookieSameSite,
+    // SameSite=None is ignored by browsers unless the cookie is also Secure.
+    secure: cookieSameSite === "none" || isProduction,
+  },
 } as const;

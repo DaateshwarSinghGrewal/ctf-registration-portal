@@ -1,7 +1,6 @@
 import { createContext, useContext, useMemo, useState, useCallback, useEffect } from 'react'
 import { fetchCurrentUser, googleSignInUrl, logout } from '../api/auth.js'
-import { onUnauthorized } from '../api/client.js'
-import { clearActivePartyId } from '../utils/activeParty.js'
+import { assertApiReachable, onUnauthorized } from '../api/client.js'
 
 const AuthContext = createContext(null)
 
@@ -46,14 +45,21 @@ export function AuthProvider({ children }) {
   useEffect(
     () =>
       onUnauthorized(() => {
-        clearActivePartyId()
         applyUser(null)
       }),
     [applyUser]
   )
 
-  /** Hands the browser to the backend, which owns the Google OAuth round trip. */
-  const signInWithGoogle = useCallback(() => {
+  /**
+   * Hands the browser to the backend, which owns the Google OAuth round trip.
+   *
+   * Reachability is checked first because this navigates away from the SPA: with
+   * the API down, the browser would land on its own connection-refused page and
+   * the user would have no way to tell that from Google sign-in being broken.
+   * Rejects with a displayable message instead.
+   */
+  const signInWithGoogle = useCallback(async () => {
+    await assertApiReachable()
     window.location.assign(googleSignInUrl())
   }, [])
 
@@ -64,7 +70,6 @@ export function AuthProvider({ children }) {
       // Even if the call fails the local session must not survive; the
       // cookie expires on its own within five hours.
     }
-    clearActivePartyId()
     applyUser(null)
   }, [applyUser])
 

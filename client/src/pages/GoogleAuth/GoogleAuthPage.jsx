@@ -22,15 +22,15 @@ export default function GoogleAuthPage() {
   const [error, setError] = useState(() => searchParams.get('error'))
   const [isRedirecting, setIsRedirecting] = useState(false)
 
-  const handleSignIn = useCallback(() => {
-    // Guarded here rather than by dropping onClick: PanelCard renders a
-    // <div> instead of a <button> when it has no handler.
+  const handleSignIn = useCallback(async () => {
     if (isLoading || isRedirecting) return
 
     setError(null)
     setIsRedirecting(true)
     try {
-      signInWithGoogle()
+      // Awaited: signInWithGoogle now probes the API first, so a rejection here
+      // is a reachable-server problem worth showing rather than an unhandled one.
+      await signInWithGoogle()
     } catch (signInError) {
       setError(signInError.message)
       setIsRedirecting(false)

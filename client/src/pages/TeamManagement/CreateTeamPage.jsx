@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import NoiseDarkPurpleGradientWithSquares from '../../components/ui/noise-dark-blue-gradient-with-squares.jsx'
 import Button from '../../components/ui/Button.jsx'
 import { createParty } from '../../api/party.js'
-import { writeActivePartyId } from '../../utils/activeParty.js'
 
 /**
  * Create Team screen. Destination of the "Create Team" CTA identified
@@ -32,12 +31,9 @@ export default function CreateTeamPage() {
       setIsSubmitting(true)
 
       try {
-        const party = await createParty({ name: trimmedName })
-
-        if (party?.id) {
-          writeActivePartyId(party.id)
-        }
-
+        // No client-side bookkeeping of the new code: /team reads the team back
+        // from GET /party/me, which is authoritative.
+        await createParty({ name: trimmedName })
         navigate('/team', { replace: true })
       } catch (createError) {
         setError(createError.message)

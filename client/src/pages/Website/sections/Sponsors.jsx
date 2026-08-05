@@ -1,5 +1,4 @@
 import SectionHeading from '../../../components/ui/SectionHeading.jsx'
-import { GradientHeading } from '../../../components/ui/gradient-heading.jsx'
 import { LogoCarousel } from '../../../components/ui/logo-carousel.jsx'
 import StarfieldBackground from '../../../components/layout/StarfieldBackground.jsx'
 import googleLogo from '../../../assets/google.png'

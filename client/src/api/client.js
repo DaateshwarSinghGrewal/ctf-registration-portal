@@ -49,15 +49,50 @@ function notifyUnauthorized() {
   })
 }
 
-/** Absolute URL on the API origin. Also used for the OAuth redirect target. */
-export function apiUrl(path) {
+/**
+ * The API origin, with no trailing slash. Used as the Socket.IO connection
+ * target, which takes an origin rather than a path.
+ */
+export function apiOrigin() {
   if (!API_BASE_URL) {
     throw new ApiError(
       'The API URL is not configured. Set VITE_API_URL in .env and restart the dev server.',
       { code: 'config' }
     )
   }
-  return `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`
+  return API_BASE_URL
+}
+
+/** Absolute URL on the API origin. Also used for the OAuth redirect target. */
+export function apiUrl(path) {
+  return `${apiOrigin()}${path.startsWith('/') ? path : `/${path}`}`
+}
+
+/**
+ * Confirms the API is reachable before handing the browser to it.
+ *
+ * Sign-in is a top-level navigation to GET /auth/google, which means it leaves
+ * the SPA entirely — so if the API is down the user gets the browser's own
+ * ERR_CONNECTION_REFUSED page, on the API's domain, with nothing to explain it.
+ * That is indistinguishable from "Google sign-in is broken", and it is the wrong
+ * thing to go debugging.
+ *
+ * Throws an ApiError with a message the sign-in screen can render. Kept short:
+ * this runs on a click, so it must not sit there spinning.
+ */
+export async function assertApiReachable() {
+  try {
+    await request('/health', { timeoutMs: 4000, notifyOnUnauthorized: false })
+  } catch (error) {
+    if (error.code === 'network' || error.code === 'timeout') {
+      throw new ApiError(
+        'Cannot reach the server, so sign-in cannot start. Make sure the API is running on ' +
+          `${API_BASE_URL || 'the configured URL'} and try again.`,
+        { code: error.code }
+      )
+    }
+    throw error
+  }
 }
 
 const FALLBACK_MESSAGES = {
@@ -170,6 +205,7 @@ export async function request(
 export const api = {
   get: (path, options) => request(path, { ...options, method: 'GET' }),
   post: (path, body, options) => request(path, { ...options, method: 'POST', body }),
+  put: (path, body, options) => request(path, { ...options, method: 'PUT', body }),
   patch: (path, body, options) => request(path, { ...options, method: 'PATCH', body }),
   delete: (path, options) => request(path, { ...options, method: 'DELETE' })
 }

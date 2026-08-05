@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 
 export function NeonMesh({
     title = "",
@@ -10,7 +10,9 @@ export function NeonMesh({
 }) {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
-    const [isDarkMode, setIsDarkMode] = useState(true);
+    // Fixed: the mesh only ever renders in dark mode, and the setter was never
+    // called, so this was state that could not change.
+    const isDarkMode = true;
 
     useEffect(() => {
         const canvas = canvasRef.current;

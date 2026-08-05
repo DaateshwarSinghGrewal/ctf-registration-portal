@@ -81,6 +81,8 @@ const LogoColumn = React.memo(
   }
 )
 
+LogoColumn.displayName = 'LogoColumn'
+
 export function LogoCarousel({ columnCount = 2, logos }) {
   const [logoSets, setLogoSets] = useState([])
   const [currentTime, setCurrentTime] = useState(0)
