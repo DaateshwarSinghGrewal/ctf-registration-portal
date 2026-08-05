@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import StarfieldBackground from '../../components/layout/StarfieldBackground.jsx'
+import NoiseDarkPurpleGradientWithSquares from '../../components/ui/noise-dark-blue-gradient-with-squares.jsx'
 import Button from '../../components/ui/Button.jsx'
 import { joinParty } from '../../api/party.js'
 import { writeActivePartyId } from '../../utils/activeParty.js'
@@ -18,7 +18,7 @@ import { writeActivePartyId } from '../../utils/activeParty.js'
  */
 export default function JoinTeamPage() {
   const navigate = useNavigate()
-  const [joinCode, setJoinCode] = useState('')
+  const [inviteCode, setInviteCode] = useState('')
   const [error, setError] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -27,10 +27,10 @@ export default function JoinTeamPage() {
       event.preventDefault()
       if (isSubmitting) return
 
-      const trimmedCode = joinCode.trim().toUpperCase()
+      const code = inviteCode.trim().toUpperCase()
 
-      if (trimmedCode.length < 4) {
-        setError('Enter the full team join code.')
+      if (code.length === 0) {
+        setError('Please enter a team code.')
         return
       }
 
@@ -38,21 +38,23 @@ export default function JoinTeamPage() {
       setIsSubmitting(true)
 
       try {
-        const party = await joinParty({ inviteCode: trimmedCode })
+        const party = await joinParty(code)
 
-        writeActivePartyId(party?.id ?? trimmedCode)
+        if (party?.id) {
+          writeActivePartyId(party.id)
+        }
         navigate('/team', { replace: true })
       } catch (joinError) {
         setError(joinError.message)
         setIsSubmitting(false)
       }
     },
-    [joinCode, navigate, isSubmitting]
+    [inviteCode, navigate, isSubmitting]
   )
 
   return (
     <main className="section-shell relative flex min-h-screen flex-col items-center justify-center px-6 py-24">
-      <StarfieldBackground density={90} />
+      <NoiseDarkPurpleGradientWithSquares />
 
       <form
         onSubmit={handleSubmit}

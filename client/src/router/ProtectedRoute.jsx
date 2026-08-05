@@ -16,11 +16,32 @@ export default function ProtectedRoute() {
 
   if (isLoading) {
     return (
-      <main className="section-shell relative flex min-h-screen flex-col items-center justify-center px-6 py-24 text-center">
-        <StarfieldBackground density={70} glow={false} />
-        <p className="relative z-10 font-support text-lg text-cream-soft">
-          Checking your session…
-        </p>
+      <main className="section-shell relative flex min-h-screen flex-col items-center justify-center px-6 py-24 text-center bg-void">
+        <StarfieldBackground density={50} glow={true} />
+        
+        <div className="relative z-10 flex flex-col items-center gap-6">
+          {/* Somnium Emblem with Ambient Glow */}
+          <div className="relative flex items-center justify-center">
+            <img 
+              src="/src/assets/somniumLogo.png" 
+              alt="Somnium Emblem" 
+              className="h-16 w-auto invert-asset opacity-90 filter drop-shadow-[0_0_25px_rgba(168,85,247,0.5)] animate-pulse" 
+            />
+          </div>
+
+          {/* Clean Brand Heading */}
+          <div className="flex flex-col items-center gap-2">
+            <span className="font-brand text-2xl font-bold tracking-widest text-white">
+              SOMNIUM
+            </span>
+            <p className="font-heading text-xs uppercase tracking-[0.3em] text-crystal-light">
+              INITIALIZING TERMINAL
+            </p>
+          </div>
+
+          {/* Subtle Ambient Line */}
+          <div className="w-24 h-px bg-gradient-to-r from-transparent via-amethyst/60 to-transparent" />
+        </div>
       </main>
     )
   }

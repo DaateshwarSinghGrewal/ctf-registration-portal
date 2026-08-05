@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import PhotoCard from '../../../components/ui/PhotoCard.jsx'
 import StarfieldBackground from '../../../components/layout/StarfieldBackground.jsx'
 
 /**

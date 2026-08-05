@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Copy, Plus, LogIn, LogOut, Trash2, X, Crown, User as UserIcon } from 'lucide-react'
 import Button from '../../components/ui/Button.jsx'
-import StarfieldBackground from '../../components/layout/StarfieldBackground.jsx'
+import NoiseDarkPurpleGradientWithSquares from '../../components/ui/noise-dark-blue-gradient-with-squares.jsx'
 import { GradientHeading } from '../../components/ui/gradient-heading.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 
@@ -34,6 +34,7 @@ export default function TeamManagementPage() {
   const [playerDetails, setPlayerDetails] = useState({
     name: '',
     phone: '',
+    discordUsername: '',
     year: '',
     branch: '',
     rollNumber: ''
@@ -48,14 +49,18 @@ export default function TeamManagementPage() {
     <div className="flex flex-col gap-4 border-t border-white/10 pt-4 mt-2">
       <p className="text-xs font-heading tracking-widest text-neutral-400 uppercase">Player Details</p>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Full Name</label>
-          <input type="text" name="name" required value={playerDetails.name} onChange={handlePlayerDetailChange} placeholder="John Doe" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+          <input type="text" name="name" required value={playerDetails.name} onChange={handlePlayerDetailChange} placeholder="e.g. Rishank Sharma" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Phone Number</label>
-          <input type="tel" name="phone" required value={playerDetails.phone} onChange={handlePlayerDetailChange} placeholder="+1 234 567 8900" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+          <input type="tel" name="phone" required value={playerDetails.phone} onChange={handlePlayerDetailChange} placeholder="e.g. +91 98765 43210" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Discord Username</label>
+          <input type="text" name="discordUsername" required value={playerDetails.discordUsername} onChange={handlePlayerDetailChange} placeholder="e.g. jonsnow" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
         </div>
       </div>
 
@@ -68,16 +73,15 @@ export default function TeamManagementPage() {
             <option value="2" className="bg-void">2nd Year</option>
             <option value="3" className="bg-void">3rd Year</option>
             <option value="4" className="bg-void">4th Year</option>
-            <option value="5" className="bg-void">5th Year</option>
           </select>
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Branch</label>
-          <input type="text" name="branch" required value={playerDetails.branch} onChange={handlePlayerDetailChange} placeholder="e.g. CSE" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+          <input type="text" name="branch" required value={playerDetails.branch} onChange={handlePlayerDetailChange} placeholder="e.g. COPC" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Roll No.</label>
-          <input type="text" name="rollNumber" required value={playerDetails.rollNumber} onChange={handlePlayerDetailChange} placeholder="e.g. 102203..." className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+          <input type="text" name="rollNumber" required value={playerDetails.rollNumber} onChange={handlePlayerDetailChange} placeholder="e.g. 1025170..." className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
         </div>
       </div>
     </div>
@@ -150,8 +154,8 @@ export default function TeamManagementPage() {
   const currentUserRole = party?.members?.find(m => m.id === 'me')?.role || 'Member'
 
   return (
-    <main className="section-shell relative flex min-h-screen flex-col items-center justify-center px-6 py-24 bg-void">
-      <StarfieldBackground density={60} glow={true} />
+    <main className="section-shell relative flex min-h-[calc(100vh-74px)] flex-col items-center justify-center px-6 py-12 bg-void">
+      <NoiseDarkPurpleGradientWithSquares />
 
       {/* Floating Toast Notification */}
       <AnimatePresence>
@@ -167,7 +171,7 @@ export default function TeamManagementPage() {
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col gap-10 mt-16">
+      <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col gap-10">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-white/10 pb-8">
@@ -337,7 +341,7 @@ export default function TeamManagementPage() {
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-              className="surface-card w-full max-w-md p-8 relative bg-void border-amethyst/40 shadow-[0_0_50px_rgba(168,85,247,0.15)]"
+              className="surface-card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8 relative bg-void border border-white/10 shadow-2xl"
             >
               <button onClick={() => setIsCreateModalOpen(false)} className="absolute top-4 right-4 text-neutral-400 hover:text-white">
                 <X className="w-6 h-6" />
@@ -371,7 +375,7 @@ export default function TeamManagementPage() {
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-              className="surface-card w-full max-w-md p-8 relative bg-void border-amethyst/40 shadow-[0_0_50px_rgba(168,85,247,0.15)]"
+              className="surface-card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8 relative bg-void border border-white/10 shadow-2xl"
             >
               <button onClick={() => setIsJoinModalOpen(false)} className="absolute top-4 right-4 text-neutral-400 hover:text-white">
                 <X className="w-6 h-6" />

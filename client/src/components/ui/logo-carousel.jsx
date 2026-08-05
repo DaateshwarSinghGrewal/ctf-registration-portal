@@ -35,7 +35,7 @@ const LogoColumn = React.memo(
 
     return (
       <motion.div
-        className="relative h-32 w-40 overflow-hidden md:h-40 md:w-56"
+        className="relative h-24 w-24 overflow-hidden sm:h-32 sm:w-40 md:h-40 md:w-56"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
@@ -47,7 +47,7 @@ const LogoColumn = React.memo(
         <AnimatePresence mode="wait">
           <motion.div
             key={`${logos[currentIndex].id}-${currentIndex}`}
-            className="absolute inset-0 flex items-center justify-center"
+            className="absolute inset-0 flex items-center justify-center p-2"
             initial={{ y: "10%", opacity: 0, filter: "blur(8px)" }}
             animate={{
               y: "0%",
@@ -73,7 +73,7 @@ const LogoColumn = React.memo(
               },
             }}
           >
-            <CurrentLogo className="h-20 w-20 max-h-full max-w-full text-white object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] md:h-32 md:w-32" />
+            <CurrentLogo className="h-12 w-12 text-white object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] sm:h-20 sm:w-20 md:h-32 md:w-32" />
           </motion.div>
         </AnimatePresence>
       </motion.div>
@@ -100,7 +100,7 @@ export function LogoCarousel({ columnCount = 2, logos }) {
   }, [logos, columnCount])
 
   return (
-    <div className="flex space-x-4">
+    <div className="flex space-x-1 sm:space-x-4 max-w-full justify-center">
       {logoSets.map((logos, index) => (
         <LogoColumn
           key={index}

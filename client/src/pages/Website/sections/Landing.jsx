@@ -32,20 +32,20 @@ export default function Landing() {
         {/* Hero Content (Cohesively grouped with ultra-tight spacing) */}
         <div className="relative z-10 flex flex-col items-center w-full max-w-4xl text-center">
           
-          {/* Sponsor Logos (Reduced Size) */}
+          {/* Sponsor Logos */}
           <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center gap-6">
-              <img src="/src/assets/ccsLogo.PNG" alt="CCS Logo" className="h-15 md:h-20 w-auto opacity-90" />
-              <span className="font-heading text-lg font-semibold text-white/30">×</span>
-              <img src="/src/assets/froshLogo.PNG" alt="Frosh Logo" className="h-16 md:h-30 w-auto opacity-90" />
+            <div className="flex items-center gap-4 sm:gap-6">
+              <img src="/src/assets/ccsLogo.PNG" alt="CCS Logo" className="h-10 sm:h-12 md:h-16 w-auto object-contain opacity-90" />
+              <span className="font-heading text-base sm:text-lg font-semibold text-white/30">×</span>
+              <img src="/src/assets/froshLogo.PNG" alt="Frosh Logo" className="h-12 sm:h-16 md:h-24 w-auto object-contain opacity-90" />
             </div>
-            <p className="font-heading text-xs md:text-lg font-semibold uppercase tracking-widest text-crystal-light">
+            <p className="font-heading text-[10px] sm:text-xs md:text-base font-semibold uppercase tracking-widest text-crystal-light">
               PRESENTS
             </p>
           </div>
 
-          {/* Somnium Logo - Increased negative margins pull the top and bottom text extremely tight against the enlarged image */}
-          <h1 className="relative flex justify-center w-full -mt-20 -mb-16 md:-mt-40 md:-mb-32 pointer-events-none select-none">
+          {/* Somnium Logo */}
+          <h1 className="relative flex justify-center w-full -mt-6 -mb-4 sm:-mt-16 sm:-mb-12 md:-mt-40 md:-mb-32 pointer-events-none select-none">
             <span className="sr-only">Somnium</span>
             <img 
               src="/src/assets/somniumText.PNG" 

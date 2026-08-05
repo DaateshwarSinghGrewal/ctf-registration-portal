@@ -1,19 +1,14 @@
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import StarfieldBackground from '../../components/layout/StarfieldBackground.jsx'
+import NoiseDarkPurpleGradientWithSquares from '../../components/ui/noise-dark-blue-gradient-with-squares.jsx'
 import Button from '../../components/ui/Button.jsx'
 import { createParty } from '../../api/party.js'
 import { writeActivePartyId } from '../../utils/activeParty.js'
 
 /**
  * Create Team screen. Destination of the "Create Team" CTA identified
- * during routing analysis; this flow was not present in the inspected
- * Figma file, so its layout follows the same panel/starfield visual
- * language as Team Management and Google Auth for continuity.
- *
- * Submits to POST /party/create. The backend owns the invite code, so the
- * created party's id is stored and Team Management shows it on return.
- * Reaching this page at all requires a session — see ProtectedRoute.
+ * during routing analysis; this flow follows the same panel/noise gradient
+ * visual language as Team Management and Google Auth for continuity.
  */
 export default function CreateTeamPage() {
   const navigate = useNavigate()
@@ -45,8 +40,6 @@ export default function CreateTeamPage() {
 
         navigate('/team', { replace: true })
       } catch (createError) {
-        // A 401 is handled globally by AuthContext, which drops the session
-        // and lets ProtectedRoute redirect to sign-in.
         setError(createError.message)
         setIsSubmitting(false)
       }
@@ -56,7 +49,7 @@ export default function CreateTeamPage() {
 
   return (
     <main className="section-shell relative flex min-h-screen flex-col items-center justify-center px-6 py-24">
-      <StarfieldBackground density={90} />
+      <NoiseDarkPurpleGradientWithSquares />
 
       <form
         onSubmit={handleSubmit}

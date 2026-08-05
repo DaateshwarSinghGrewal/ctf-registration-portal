@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 import { Navigate, useLocation, useSearchParams } from 'react-router-dom'
-import PanelCard from '../../components/ui/PanelCard.jsx'
 import NeonMesh from '../../components/ui/neon-mesh.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 
@@ -43,10 +42,10 @@ export default function GoogleAuthPage() {
   }
 
   return (
-    <main className="section-shell relative flex min-h-[calc(100vh-74px)] flex-col items-center justify-center px-6 py-24">
+    <main className="section-shell relative flex min-h-[calc(100vh-74px)] flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-24">
       <NeonMesh className="absolute inset-0 z-0" />
 
-      <div className="relative z-10 flex w-full max-w-[480px] flex-col items-center rounded-2xl border border-amethyst/10 bg-[#0c0814] p-10 shadow-2xl sm:p-14">
+      <div className="relative z-10 flex w-full max-w-[480px] flex-col items-center rounded-2xl border border-amethyst/10 bg-[#0c0814] p-6 sm:p-12 shadow-2xl">
         
         <div className="mb-8 flex flex-col items-center space-y-3 text-center">
           <p className="eyebrow tracking-[0.3em]">
