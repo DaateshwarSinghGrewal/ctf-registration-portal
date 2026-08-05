@@ -50,22 +50,24 @@ function notifyUnauthorized() {
 }
 
 /**
- * The API origin, with no trailing slash. Used as the Socket.IO connection
- * target, which takes an origin rather than a path.
+ * The API origin, with no trailing slash.
+ *
+ * An empty string means "same origin as the page", which is the deployed
+ * arrangement where the SPA and the API sit behind one host and VITE_API_URL is
+ * not set. Callers that need an absolute target (the Socket.IO connection) must
+ * treat empty as "connect to the current origin" rather than passing it through.
  */
 export function apiOrigin() {
-  if (!API_BASE_URL) {
-    throw new ApiError(
-      'The API URL is not configured. Set VITE_API_URL in .env and restart the dev server.',
-      { code: 'config' }
-    )
-  }
   return API_BASE_URL
 }
 
-/** Absolute URL on the API origin. Also used for the OAuth redirect target. */
+/**
+ * Absolute URL on the API origin, or a root-relative path when no origin is
+ * configured. Also used as the OAuth redirect target.
+ */
 export function apiUrl(path) {
-  return `${apiOrigin()}${path.startsWith('/') ? path : `/${path}`}`
+  const cleanPath = path.startsWith('/') ? path : `/${path}`
+  return API_BASE_URL ? `${API_BASE_URL}${cleanPath}` : cleanPath
 }
 
 /**
@@ -86,8 +88,8 @@ export async function assertApiReachable() {
   } catch (error) {
     if (error.code === 'network' || error.code === 'timeout') {
       throw new ApiError(
-        'Cannot reach the server, so sign-in cannot start. Make sure the API is running on ' +
-          `${API_BASE_URL || 'the configured URL'} and try again.`,
+        'Cannot reach the server, so sign-in cannot start. Make sure the API is running at ' +
+          `${API_BASE_URL || 'this site’s own origin'} and try again.`,
         { code: error.code }
       )
     }

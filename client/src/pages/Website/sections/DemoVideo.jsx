@@ -9,7 +9,7 @@ import StarfieldBackground from '../../../components/layout/StarfieldBackground.
  */
 export default function DemoVideo() {
   return (
-    <section className="section-shell relative px-6 pt-24 pb-12 sm:pt-32 sm:pb-16">
+    <section className="section-shell relative px-6 pt-24 pb-12 sm:pt-32 sm:pb-16" id="demo">
       <StarfieldBackground density={50} glow={false} />
 
       <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-10 text-center">

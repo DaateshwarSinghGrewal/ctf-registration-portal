@@ -28,22 +28,21 @@ export function SocketProvider({ children }) {
   useEffect(() => {
     if (!isAuthenticated) return undefined
 
-    let instance
-    try {
-      instance = io(apiOrigin(), {
-        withCredentials: true,
-        // Polling first, then upgrade. Forcing websocket-only fails outright
-        // behind proxies that do not pass the upgrade through, and the fallback
-        // is what keeps the app working there rather than silently offline.
-        transports: ['polling', 'websocket'],
-        reconnectionDelay: 500,
-        reconnectionDelayMax: 5000
-      })
-    } catch {
-      // apiOrigin throws when VITE_API_URL is unset. The REST layer already
-      // surfaces that as a visible error; realtime just stays off.
-      return undefined
+    const options = {
+      withCredentials: true,
+      // Polling first, then upgrade. Forcing websocket-only fails outright
+      // behind proxies that do not pass the upgrade through, and the fallback
+      // is what keeps the app working there rather than silently offline.
+      transports: ['polling', 'websocket'],
+      reconnectionDelay: 500,
+      reconnectionDelayMax: 5000
     }
+
+    // An empty origin means the API is served from this same host (no
+    // VITE_API_URL). Passing '' would be treated as a URL and fail, so the
+    // one-argument form is used, which connects to the current origin.
+    const origin = apiOrigin()
+    const instance = origin ? io(origin, options) : io(options)
 
     const onConnect = () => setIsConnected(true)
     const onDisconnect = () => setIsConnected(false)

@@ -1,5 +1,6 @@
 import SectionHeading from '../../../components/ui/SectionHeading.jsx'
 import StarfieldBackground from '../../../components/layout/StarfieldBackground.jsx'
+import somniumLogo from '../../../assets/somniumLogo.png'
 
 /**
  * Page 2B — narrative framing for Somnium specifically: the dream-world
@@ -14,7 +15,7 @@ export default function AboutGame() {
         {/* Left Column: Somnium Logo */}
         <div className="flex justify-center md:justify-end">
           <img
-            src="/src/assets/somniumLogo.png"
+            src={somniumLogo}
             alt="Somnium Emblem"
             className="w-3/4 max-w-[300px] md:w-full md:max-w-[450px] filter drop-shadow-[0_0_30px_rgba(168,85,247,0.3)] transition-transform duration-700 hover:scale-105"
           />

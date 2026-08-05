@@ -2,7 +2,7 @@ import Landing from './sections/Landing.jsx'
 import DemoVideo from './sections/DemoVideo.jsx'
 import AboutGame from './sections/AboutGame.jsx'
 import RegisterTeaser from './sections/RegisterTeaser.jsx'
-import Sponsors from './sections/Sponsors.jsx'
+// import Sponsors from './sections/Sponsors.jsx'
 import ContactUs from './sections/ContactUs.jsx'
 
 /**
@@ -24,7 +24,7 @@ export default function WebsitePage() {
       <Separator />
       <RegisterTeaser />
       <Separator />
-      <Sponsors />
+      {/* <Sponsors /> */}
       <Separator />
       <ContactUs />
     </main>
