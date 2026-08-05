@@ -117,4 +117,58 @@ Socket events wired: `team:memberJoined` · `team:memberLeft` · `team:memberRem
 1. **No UI control sets `visibility: PRIVATE`** → the whole join-request flow is unreachable in practice.
 2. **`ADMIN_EMAILS` is empty** → all 7 admin endpoints return 403 to everyone.
 
+---
+
+## Not built yet
+
+Backlog. Nothing below exists — these are gaps, not unwired endpoints.
+
+### Will bite during the event
+
+| # | Gap | Note |
+|---|---|---|
+| 1 | `GET /admin/parties` | `DELETE /admin/parties/:partyId` exists, but nothing lists teams — an admin can only delete a team whose code they already know. |
+| 2 | Admin read of `player_profiles` | **Defect.** No endpoint exposes the six registration fields to an organiser. They are collectable but not retrievable except by direct SQL. |
+| 3 | Registration export (CSV / JSON) | Needed for badges, Discord roles, seating. Currently raw SQL only. |
+| 4 | Configurable team size | `MAX_PLAYERS = 4` in `party.service.ts` **and** `CHECK (maxPlayers BETWEEN 1 AND 4)` in migration 002. Changing it needs a code change *and* a migration. |
+| 5 | `REGISTRATION_CLOSING_SOON` | **Defect.** Declared in `NotificationType`, never emitted — no scheduler. Either wire one or delete the member. |
+| 6 | Registration stats | Live counts (teams, full, solo, by year/branch) for an organiser dashboard. |
+
+### Scale and operations
+
+| # | Gap | Note |
+|---|---|---|
+| 7 | Provision `REDIS_URL` | Already supported in code. Without it the API is capped at **one instance** — rate limits and socket fan-out are per-process. |
+| 8 | Request IDs + structured logs | A user reporting "it failed" is currently unsearchable. |
+| 9 | `/ready` separate from `/health` | `/health` returns 200 before the DB is confirmed on a cold start; a load balancer will route traffic too early. |
+| 10 | Bulk admin actions | Disqualifying 20 teams is 20 HTTP calls. |
+
+### Security
+
+| # | Gap | Note |
+|---|---|---|
+| 11 | Logout does not revoke | It clears the cookie; the JWT stays valid for its full 5h. A stolen token survives sign-out. Needs a jti denylist or token version. |
+| 12 | No rate limit on `PUT /profile` | Every other write is capped. |
+| 13 | Account deletion / data export | The honest answer to "delete my data". |
+| 14 | Duplicate-identity detection | Only `rollNumber` is unique — one person can register twice with two Google accounts. |
+
+### Product
+
+| # | Feature |
+|---|---|
+| 15 | Public team discovery (browse/search open teams instead of needing a code) |
+| 16 | Email notification channel — `NotificationChannel` is already the seam |
+| 17 | Web push channel — same seam |
+| 18 | Tokenised invite links (`/join/<token>`) instead of typing a 6-char code |
+| 19 | Admin announcements broadcast to all participants |
+| 20 | Event-day team check-in |
+
+### Out of scope
+
+Challenges, flag submission and scoreboard. This backend is the registration
+portal only; the CTF itself runs on a separate platform. The `/submit` stub that
+returned `{ok:true}` was removed rather than left looking implemented.
+
+---
+
 Full request/response detail: [`express/API_ENDPOINTS.md`](express/API_ENDPOINTS.md).

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Copy, Plus, LogIn, LogOut, Trash2, X, Crown, User as UserIcon } from 'lucide-react'
 import Button from '../../components/ui/Button.jsx'
@@ -6,6 +6,8 @@ import NoiseDarkPurpleGradientWithSquares from '../../components/ui/noise-dark-b
 import { GradientHeading } from '../../components/ui/gradient-heading.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { useTeam } from '../../hooks/useTeam.js'
+import { useSocketEvent } from '../../realtime/SocketProvider.jsx'
+import { SOCKET_EVENTS } from '../../realtime/events.js'
 import { getProfile } from '../../api/profile.js'
 
 /**
@@ -78,10 +80,33 @@ export default function TeamManagementPage() {
     setPlayerDetails((prev) => ({ ...prev, [name]: value }))
   }
 
+  /**
+   * Timer is held in a ref and cleared on each call: two toasts in quick
+   * succession would otherwise leave the first one's timer running, and it would
+   * blank the second one early.
+   */
+  const toastTimer = useRef(null)
+
   const showToast = useCallback((msg) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current)
     setToastMessage(msg)
-    setTimeout(() => setToastMessage(''), 3000)
+    toastTimer.current = setTimeout(() => setToastMessage(''), 4000)
   }, [])
+
+  useEffect(() => () => clearTimeout(toastTimer.current), [])
+
+  /**
+   * Server-sent notifications.
+   *
+   * The backend already persisted one and pushed it here; without this listener
+   * it went nowhere, so a leader was never told that someone had joined — the
+   * roster silently gained a row and nothing said why. Notifications are only
+   * addressed to users who should hear about the action, so this never echoes the
+   * actor's own doing back at them.
+   */
+  useSocketEvent(SOCKET_EVENTS.NOTIFICATION_NEW, ({ notification }) => {
+    showToast(notification.body)
+  })
 
   const closeModals = useCallback(() => {
     setIsCreateModalOpen(false)
