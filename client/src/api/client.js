@@ -49,15 +49,13 @@ function notifyUnauthorized() {
   })
 }
 
-/** Absolute URL on the API origin. Also used for the OAuth redirect target. */
 export function apiUrl(path) {
+  const cleanPath = path.startsWith('/') ? path : `/${path}`
   if (!API_BASE_URL) {
-    throw new ApiError(
-      'The API URL is not configured. Set VITE_API_URL in .env and restart the dev server.',
-      { code: 'config' }
-    )
+    // Fallback to same-origin relative path if no base URL is configured
+    return cleanPath
   }
-  return `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`
+  return `${API_BASE_URL}${cleanPath}`
 }
 
 const FALLBACK_MESSAGES = {
