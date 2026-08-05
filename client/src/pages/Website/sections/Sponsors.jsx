@@ -1,28 +1,22 @@
 import SectionHeading from '../../../components/ui/SectionHeading.jsx'
 import { GradientHeading } from '../../../components/ui/gradient-heading.jsx'
 import { LogoCarousel } from '../../../components/ui/logo-carousel.jsx'
-import {
-  Gamepad2,
-  Trophy,
-  Swords,
-  ShieldAlert,
-  TerminalSquare,
-  Ghost,
-  Fingerprint,
-  Cpu,
-  Binary
-} from 'lucide-react'
+import StarfieldBackground from '../../../components/layout/StarfieldBackground.jsx'
+import googleLogo from '../../../assets/google.png'
+import linkedinLogo from '../../../assets/linkedin.png'
+
+const GoogleIcon = (props) => <img src={googleLogo} alt="Google" {...props} />
+const LinkedinIcon = (props) => <img src={linkedinLogo} alt="LinkedIn" {...props} />
 
 const allLogos = [
-  { name: 'Gaming Partner', id: 1, img: Gamepad2 },
-  { name: 'Award Partner', id: 2, img: Trophy },
-  { name: 'Security Partner', id: 3, img: ShieldAlert },
-  { name: 'Code Partner', id: 4, img: TerminalSquare },
-  { name: 'Stealth Partner', id: 5, img: Ghost },
-  { name: 'Identity Partner', id: 6, img: Fingerprint },
-  { name: 'Hardware Partner', id: 7, img: Cpu },
-  { name: 'Tech Partner', id: 8, img: Binary },
-  { name: 'Battle Partner', id: 9, img: Swords },
+  // First layer
+  { name: 'Google 1', id: 1, img: GoogleIcon },
+  { name: 'LinkedIn 1', id: 2, img: LinkedinIcon },
+  { name: 'Google 2', id: 3, img: GoogleIcon },
+  // Second layer (for animation cycling)
+  { name: 'LinkedIn 2', id: 4, img: LinkedinIcon },
+  { name: 'Google 3', id: 5, img: GoogleIcon },
+  { name: 'LinkedIn 3', id: 6, img: LinkedinIcon },
 ]
 
 /**
@@ -32,6 +26,8 @@ const allLogos = [
 export default function Sponsors() {
   return (
     <section className="section-shell relative px-6 py-24 sm:py-32" id="sponsors">
+      <StarfieldBackground density={40} glow={false} />
+      
       <div className="relative z-10 mx-auto flex w-full max-w-screen-lg flex-col items-center space-y-16">
         <div className="text-center w-full max-w-4xl">
           <SectionHeading 
@@ -42,8 +38,8 @@ export default function Sponsors() {
           />
         </div>
 
-        <div className="w-full max-w-4xl opacity-80 mix-blend-screen">
-          <LogoCarousel columnCount={4} logos={allLogos} />
+        <div className="flex w-full max-w-4xl justify-center">
+          <LogoCarousel columnCount={3} logos={allLogos} />
         </div>
       </div>
     </section>

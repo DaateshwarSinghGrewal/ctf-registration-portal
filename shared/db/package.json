@@ -20,8 +20,10 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "dotenv": "^17.4.2",
     "ioredis": "^5.11.1",
-    "pg": "^8.22.0"
+    "pg": "^8.22.0",
+    "ws": "^8.21.2"
   }
 }

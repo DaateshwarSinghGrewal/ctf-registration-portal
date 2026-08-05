@@ -56,6 +56,16 @@ app.post("/submit", flagLimiter, (req, res) => {
   res.json({ ok: true, message: "flag received" });
 });
 
+app.get("/test-db", async (req, res) => {
+  try {
+    const { default: pool } = await import("../../shared/db/pg.js");
+    const result = await pool.query("SELECT * FROM user_auth LIMIT 1");
+    res.json({ ok: true, data: result.rows });
+  } catch (error: any) {
+    res.status(500).json({ ok: false, error: error.message, code: error.code });
+  }
+});
+
 app.listen(env.port, () => {
   console.log(` Server running on http://localhost:${env.port}`);
 });

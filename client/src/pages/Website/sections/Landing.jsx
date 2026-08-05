@@ -44,13 +44,13 @@ export default function Landing() {
             </p>
           </div>
 
-          {/* Somnium Logo - Negative margins pull the top and bottom text extremely tight against the image */}
-          <h1 className="relative flex justify-center w-full -mt-2 -mb-2">
+          {/* Somnium Logo - Increased negative margins pull the top and bottom text extremely tight against the enlarged image */}
+          <h1 className="relative flex justify-center w-full -mt-20 -mb-16 md:-mt-40 md:-mb-32 pointer-events-none select-none">
             <span className="sr-only">Somnium</span>
             <img 
               src="/src/assets/somniumText.PNG" 
               alt="Somnium Logo" 
-              className="w-full max-w-[500px] md:max-w-[600px] filter drop-shadow-[0_0_30px_rgba(168,85,247,0.3)]" 
+              className="w-full max-w-[700px] md:max-w-[900px] filter drop-shadow-[0_0_30px_rgba(168,85,247,0.3)]" 
             />
           </h1>
 

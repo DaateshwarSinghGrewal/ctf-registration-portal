@@ -17,18 +17,19 @@ export default function DemoVideo() {
 
         <div className="aspect-video w-full max-w-5xl overflow-hidden surface-card border-none bg-void-soft relative group">
           <div className="absolute inset-0 border border-white/10 group-hover:border-amethyst/50 transition-colors duration-300 pointer-events-none z-10" />
-          <video
-            className="h-full w-full object-cover"
-            controls
-            preload="none"
-          >
-            <source src="/assets/videos/somnium-demo.mp4" type="video/mp4" />
-            Your browser does not support embedded video. Use the link below to watch instead.
-          </video>
+          <iframe
+            className="absolute inset-0 h-full w-full"
+            src="https://www.youtube.com/embed/HluQIBP7cwY"
+            title="Demo Video"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          ></iframe>
         </div>
 
-        <Button variant="text-link" href="https://youtube.com/watch?v=somnium-demo">
-          Video Link
+        <Button variant="text-link" href="https://youtu.be/HluQIBP7cwY?si=a8j5_yGzRy0jWcYR" target="_blank" rel="noopener noreferrer">
+          Watch on YouTube
         </Button>
       </div>
     </section>

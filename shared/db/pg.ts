@@ -1,11 +1,17 @@
 import dotenv from 'dotenv';
 import { Pool } from 'pg';
+import * as dns from 'dns';
+
+// Force Node to prioritize IPv4 over IPv6. This prevents ENETUNREACH/ETIMEDOUT 
+// errors when the local network drops IPv6 packets to Neon/AWS databases.
+dns.setDefaultResultOrder('ipv4first');
 
 dotenv.config();
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 30000,
 });
 
 /** Asynchronously to verify -> PostgreSQL connection 

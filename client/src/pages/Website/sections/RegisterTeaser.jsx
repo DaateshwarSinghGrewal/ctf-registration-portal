@@ -1,31 +1,13 @@
-import { useCallback, useState } from 'react'
+import { Link } from 'react-router-dom'
 import PhotoCard from '../../../components/ui/PhotoCard.jsx'
-import Button from '../../../components/ui/Button.jsx'
-import { useAuth } from '../../../context/AuthContext.jsx'
 import StarfieldBackground from '../../../components/layout/StarfieldBackground.jsx'
 
 /**
  * Page 4A — Registration teaser. Hosts the file's primary conversion
  * point: the "Register Now" heading and the "sign in with Google" prompt,
- * both of which route to the standalone Google Auth screen per the
- * routing analysis. The "Order Now" link is treated as a separate,
- * external merchandise/ticket action rather than part of the
- * registration flow, since its label doesn't match the surrounding
- * registration copy.
+ * both of which route to the standalone Google Auth screen.
  */
 export default function RegisterTeaser() {
-  const { signInWithGoogle } = useAuth()
-  const [signInError, setSignInError] = useState(null)
-
-  const handleGoogleSignIn = useCallback(() => {
-    setSignInError(null)
-    try {
-      signInWithGoogle()
-    } catch (error) {
-      setSignInError(error.message)
-    }
-  }, [signInWithGoogle])
-
   return (
     <section className="section-shell relative px-6 py-24 sm:py-32">
       <StarfieldBackground density={50} glow={false} />
@@ -39,9 +21,8 @@ export default function RegisterTeaser() {
           Connect your Google account and create your team to secure your spot in the competition.
         </p>
 
-        <button
-          type="button"
-          onClick={handleGoogleSignIn}
+        <Link
+          to="/auth"
           className="mt-4 group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-full bg-void border border-amethyst/30 px-10 py-4 text-sm font-bold tracking-widest text-white uppercase transition-all duration-300 hover:border-amethyst hover:scale-105"
         >
           <span className="relative z-10 flex items-center gap-3">
@@ -53,13 +34,7 @@ export default function RegisterTeaser() {
             </svg>
             Sign in with Google
           </span>
-        </button>
-
-        {signInError ? (
-          <p role="alert" className="font-body text-sm text-red-400 mt-2">
-            {signInError}
-          </p>
-        ) : null}
+        </Link>
       </div>
     </section>
   )

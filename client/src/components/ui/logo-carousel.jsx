@@ -8,27 +8,17 @@ import React, {
 } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
-const shuffleArray = (array) => {
-  const shuffled = [...array]
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-  }
-  return shuffled
-}
-
 const distributeLogos = (allLogos, columnCount) => {
-  const shuffled = shuffleArray(allLogos)
   const columns = Array.from({ length: columnCount }, () => [])
 
-  shuffled.forEach((logo, index) => {
+  allLogos.forEach((logo, index) => {
     columns[index % columnCount].push(logo)
   })
 
   const maxLength = Math.max(...columns.map((col) => col.length))
   columns.forEach((col) => {
     while (col.length < maxLength) {
-      col.push(shuffled[Math.floor(Math.random() * shuffled.length)])
+      col.push(allLogos[Math.floor(Math.random() * allLogos.length)])
     }
   })
 
@@ -45,7 +35,7 @@ const LogoColumn = React.memo(
 
     return (
       <motion.div
-        className="relative h-24 w-32 overflow-hidden md:h-32 md:w-48"
+        className="relative h-32 w-40 overflow-hidden md:h-40 md:w-56"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
@@ -83,7 +73,7 @@ const LogoColumn = React.memo(
               },
             }}
           >
-            <CurrentLogo className="h-16 w-16 max-h-[80%] max-w-[80%] text-white object-contain opacity-70 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] md:h-24 md:w-24" />
+            <CurrentLogo className="h-20 w-20 max-h-full max-w-full text-white object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] md:h-32 md:w-32" />
           </motion.div>
         </AnimatePresence>
       </motion.div>
