@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { navLinks } from '../../constants/navLinks.js'
 import { useScrollAnchor } from '../../hooks/useScrollAnchor.js'
 import Button from '../ui/Button.jsx'
+import somniumLogo from '../../assets/somniumLogo.png'
 
 /**
  * Persistent top navigation bar for the Website screen.
@@ -43,7 +44,7 @@ export default function NavBar() {
           className="flex items-center gap-3 transition-opacity duration-200 hover:opacity-80"
           onClick={() => setIsMobileMenuOpen(false)}
         >
-          <img src="/src/assets/somniumLogo.png" alt="" className="h-7 sm:h-8 w-auto invert-asset opacity-90" aria-hidden="true" />
+          <img src={somniumLogo} alt="" className="h-7 sm:h-8 w-auto invert-asset opacity-90" aria-hidden="true" />
           <span className="font-brand text-xl sm:text-2xl font-bold tracking-wide text-white">SOMNIUM</span>
         </Link>
 

@@ -1,21 +1,34 @@
+import { useEffect, useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import CountdownTimer from '../../../components/sections/CountdownTimer.jsx'
 import StarfieldBackground from '../../../components/layout/StarfieldBackground.jsx'
 import Button from '../../../components/ui/Button.jsx'
+import ccsLogo from '../../../assets/ccsLogo.PNG'
+import froshLogo from '../../../assets/froshLogo.PNG'
+import somniumText from '../../../assets/somniumText.PNG'
+import bgImage from '../../../assets/bg.webp'
 
 /**
  * Page 1A — Landing hero. Features the cosmic crystal vortex background
  * and the custom gothic logotype.
  */
 export default function Landing() {
+  const containerRef = useRef(null)
+  const { scrollY } = useScroll()
+  const y = useTransform(scrollY, [0, 1000], [0, 300])
+
   return (
-    <section className="relative w-full flex-col bg-void">
+    <section 
+      ref={containerRef}
+      className="relative w-full flex-col bg-void"
+    >
       
       {/* Background Wrapper - Extends through the whole section, scrolls naturally */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div 
           className="absolute inset-0 bg-cover bg-no-repeat opacity-60"
           style={{ 
-            backgroundImage: 'url("/src/assets/bg.webp")',
+            backgroundImage: `url(${bgImage})`,
             backgroundPosition: 'center 75%' // Higher percentage shifts the background UP, aligning the vortex with Somnium
           }}
         />
@@ -35,9 +48,9 @@ export default function Landing() {
           {/* Sponsor Logos */}
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-4 sm:gap-6">
-              <img src="/src/assets/ccsLogo.PNG" alt="CCS Logo" className="h-10 sm:h-12 md:h-16 w-auto object-contain opacity-90" />
+              <img src={ccsLogo} alt="CCS Logo" className="h-10 sm:h-12 md:h-16 w-auto object-contain opacity-90" />
               <span className="font-heading text-base sm:text-lg font-semibold text-white/30">×</span>
-              <img src="/src/assets/froshLogo.PNG" alt="Frosh Logo" className="h-12 sm:h-16 md:h-24 w-auto object-contain opacity-90" />
+              <img src={froshLogo} alt="Frosh Logo" className="h-14 sm:h-21 md:h-30 w-auto object-contain opacity-90" />
             </div>
             <p className="font-heading text-[10px] sm:text-xs md:text-base font-semibold uppercase tracking-widest text-crystal-light">
               PRESENTS
@@ -48,7 +61,7 @@ export default function Landing() {
           <h1 className="relative flex justify-center w-full -mt-6 -mb-4 sm:-mt-16 sm:-mb-12 md:-mt-40 md:-mb-32 pointer-events-none select-none">
             <span className="sr-only">Somnium</span>
             <img 
-              src="/src/assets/somniumText.PNG" 
+              src={somniumText} 
               alt="Somnium Logo" 
               className="w-full max-w-[700px] md:max-w-[900px] filter drop-shadow-[0_0_30px_rgba(168,85,247,0.3)]" 
             />

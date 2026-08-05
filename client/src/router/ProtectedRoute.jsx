@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import StarfieldBackground from '../components/layout/StarfieldBackground.jsx'
+import somniumLogo from '../assets/somniumLogo.png'
 
 /**
  * Route guard for the gated Team Management flow.
@@ -23,7 +24,7 @@ export default function ProtectedRoute() {
           {/* Somnium Emblem with Ambient Glow */}
           <div className="relative flex items-center justify-center">
             <img 
-              src="/src/assets/somniumLogo.png" 
+              src={somniumLogo} 
               alt="Somnium Emblem" 
               className="h-16 w-auto invert-asset opacity-90 filter drop-shadow-[0_0_25px_rgba(168,85,247,0.5)] animate-pulse" 
             />
