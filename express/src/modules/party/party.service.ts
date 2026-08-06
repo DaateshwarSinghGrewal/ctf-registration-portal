@@ -29,6 +29,7 @@ import {
   partyIdExists,
   removeMember,
   updateParty,
+  listPublicParties as listPublicPartiesRepo,
 } from "./party.repository.js";
 import {
   PartyVisibility,
@@ -92,6 +93,11 @@ export async function getMyParty(userId: string): Promise<PartyDetails | null> {
   if (!party) return null;
 
   return toDetails(party, await findMembers(party.id));
+}
+
+export async function listPublicParties(): Promise<PartySummary[]> {
+  const rows = await listPublicPartiesRepo();
+  return rows.map(row => toSummary(row, parseInt(row.membercount, 10)));
 }
 
 /* -------------------------------------------------------------------------- */

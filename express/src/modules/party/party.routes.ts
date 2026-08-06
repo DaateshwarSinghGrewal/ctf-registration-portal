@@ -146,6 +146,8 @@ router.delete(
 );
 
 /* --- read ---------------------------------------------------------------- */
+router.get("/public", asyncHandler(controller.listPublicParties));
+
 // Last: a bare "/:partyId" would otherwise shadow every literal path above.
 router.get(
   "/:partyId",

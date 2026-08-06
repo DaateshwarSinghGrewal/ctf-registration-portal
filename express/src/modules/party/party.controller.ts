@@ -52,10 +52,14 @@ export async function joinParty(req: Request, res: Response): Promise<void> {
   ok(res, party, "Joined team");
 }
 
-/** The team the caller belongs to. `data: null` when they are in none. */
 export async function getMyParty(req: Request, res: Response): Promise<void> {
   const party = await partyService.getMyParty(req.user!.userId);
   ok(res, party, party ? "OK" : "You are not in a team");
+}
+
+export async function listPublicParties(req: Request, res: Response): Promise<void> {
+  const parties = await partyService.listPublicParties();
+  ok(res, parties);
 }
 
 export async function getParty(req: Request, res: Response): Promise<void> {

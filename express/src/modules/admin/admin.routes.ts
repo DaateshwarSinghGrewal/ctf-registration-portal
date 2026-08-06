@@ -39,6 +39,8 @@ router.patch(
 );
 
 /* --- team overrides ------------------------------------------------------- */
+router.get("/parties", validate({ query: paginationSchema }), asyncHandler(controller.listParties));
+
 router.delete(
   "/parties/:partyId",
   validate({ params: z.object({ partyId: partyIdSchema }) }),

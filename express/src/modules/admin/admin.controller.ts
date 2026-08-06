@@ -11,6 +11,11 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
   ok(res, await service.listUsers(limit, offset));
 }
 
+export async function listParties(req: Request, res: Response): Promise<void> {
+  const { limit, offset } = validatedQuery<{ limit: number; offset: number }>(req);
+  ok(res, await service.listParties(limit, offset));
+}
+
 export async function getUser(req: Request, res: Response): Promise<void> {
   ok(res, await service.getUser(pathParam(req, "userId")));
 }

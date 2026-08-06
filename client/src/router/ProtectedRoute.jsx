@@ -11,8 +11,8 @@ import somniumLogo from '../assets/somniumLogo.png'
  * /auth on every refresh. The attempted path is passed along so sign-in can
  * return the user where they were headed.
  */
-export default function ProtectedRoute() {
-  const { isAuthenticated, isLoading } = useAuth()
+export default function ProtectedRoute({ requireAdmin = false }) {
+  const { user, isAuthenticated, isLoading } = useAuth()
   const location = useLocation()
 
   if (isLoading) {
@@ -49,6 +49,10 @@ export default function ProtectedRoute() {
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace state={{ from: location.pathname }} />
+  }
+
+  if (requireAdmin && user?.role !== 'ADMIN') {
+    return <Navigate to="/team" replace />
   }
 
   return <Outlet />

@@ -2,8 +2,8 @@ import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import NoiseDarkPurpleGradientWithSquares from '../../components/ui/noise-dark-blue-gradient-with-squares.jsx'
 import Button from '../../components/ui/Button.jsx'
-import { joinParty } from '../../api/party.js'
-
+import { getPartyDetails, joinParty } from '../../api/party.js'
+import { requestToJoin } from '../../api/joinRequest.js'
 /**
  * Join Team screen — the standalone route version of the join flow.
  *
@@ -18,8 +18,10 @@ export default function JoinTeamPage() {
   const [inviteCode, setInviteCode] = useState('')
   const [error, setError] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [step, setStep] = useState(1) // 1: Enter code, 2: Confirm join
+  const [teamDetails, setTeamDetails] = useState(null)
 
-  const handleSubmit = useCallback(
+  const handleNext = useCallback(
     async (event) => {
       event.preventDefault()
       if (isSubmitting) return
@@ -35,61 +37,130 @@ export default function JoinTeamPage() {
       setIsSubmitting(true)
 
       try {
-        await joinParty({ inviteCode: code })
-        navigate('/team', { replace: true })
-      } catch (joinError) {
-        setError(joinError.message)
+        const details = await getPartyDetails(code)
+        if (!details) {
+          setError('Team not found.')
+          setIsSubmitting(false)
+          return
+        }
+        setTeamDetails(details)
+        setStep(2)
+        setIsSubmitting(false)
+      } catch (err) {
+        setError(err.message)
         setIsSubmitting(false)
       }
     },
-    [inviteCode, navigate, isSubmitting]
+    [inviteCode, isSubmitting]
+  )
+
+  const handleConfirm = useCallback(
+    async (event) => {
+      event.preventDefault()
+      if (isSubmitting || !teamDetails) return
+
+      setError(null)
+      setIsSubmitting(true)
+
+      try {
+        if (teamDetails.visibility === 'PRIVATE') {
+          await requestToJoin(teamDetails.id)
+          navigate('/team', { replace: true })
+        } else {
+          await joinParty({ inviteCode: teamDetails.id })
+          navigate('/team', { replace: true })
+        }
+      } catch (err) {
+        setError(err.message)
+        setIsSubmitting(false)
+      }
+    },
+    [teamDetails, navigate, isSubmitting]
   )
 
   return (
     <main className="section-shell relative flex min-h-screen flex-col items-center justify-center px-6 py-24">
       <NoiseDarkPurpleGradientWithSquares />
 
-      <form
-        onSubmit={handleSubmit}
-        className="relative z-10 flex w-full max-w-md flex-col items-center gap-8 text-center"
-      >
-        <div className="flex flex-col items-center gap-2">
-          <p className="eyebrow">Already Have a Code?</p>
-          <h1 className="font-heading text-5xl font-bold text-white sm:text-6xl">Join a Team</h1>
-        </div>
+      {step === 1 ? (
+        <form
+          onSubmit={handleNext}
+          className="relative z-10 flex w-full max-w-md flex-col items-center gap-8 text-center"
+        >
+          <div className="flex flex-col items-center gap-2">
+            <p className="eyebrow">Already Have a Code?</p>
+            <h1 className="font-heading text-5xl font-bold text-white sm:text-6xl">Join a Team</h1>
+          </div>
 
-        <div className="flex w-full flex-col items-start gap-2 text-left">
-          <label htmlFor="join-code" className="font-heading text-xs uppercase tracking-wide text-crystal-light">
-            Join code
-          </label>
-          <input
-            id="join-code"
-            name="join-code"
-            type="text"
-            maxLength={6}
-            value={inviteCode}
-            onChange={(event) => setInviteCode(event.target.value.toUpperCase())}
-            placeholder="A1B2C3"
-            autoComplete="off"
+          <div className="flex w-full flex-col items-start gap-2 text-left">
+            <label htmlFor="join-code" className="font-heading text-xs uppercase tracking-wide text-crystal-light">
+              Join code
+            </label>
+            <input
+              id="join-code"
+              name="join-code"
+              type="text"
+              maxLength={6}
+              value={inviteCode}
+              onChange={(event) => setInviteCode(event.target.value.toUpperCase())}
+              placeholder="A1B2C3"
+              autoComplete="off"
+              disabled={isSubmitting}
+              className="input-field uppercase"
+            />
+            {error ? (
+              <p role="alert" className="font-body text-sm text-red-400">
+                {error}
+              </p>
+            ) : null}
+          </div>
+
+          <Button
+            variant="pill"
+            type="submit"
             disabled={isSubmitting}
-            className="input-field uppercase"
-          />
+            className="w-full max-w-none disabled:opacity-60"
+          >
+            {isSubmitting ? 'Checking…' : 'Continue'}
+          </Button>
+        </form>
+      ) : (
+        <form
+          onSubmit={handleConfirm}
+          className="relative z-10 flex w-full max-w-md flex-col items-center gap-8 text-center"
+        >
+          <div className="flex flex-col items-center gap-2">
+            <p className="eyebrow">{teamDetails.visibility === 'PRIVATE' ? 'Private Team' : 'Public Team'}</p>
+            <h1 className="font-heading text-5xl font-bold text-white sm:text-6xl break-words w-full px-4">{teamDetails.name}</h1>
+          </div>
+
           {error ? (
             <p role="alert" className="font-body text-sm text-red-400">
               {error}
             </p>
           ) : null}
-        </div>
 
-        <Button
-          variant="pill"
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full max-w-none disabled:opacity-60"
-        >
-          {isSubmitting ? 'Joining…' : 'Join Team'}
-        </Button>
-      </form>
+          <div className="flex w-full gap-4">
+            <Button
+              variant="ghost"
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => { setStep(1); setError(null) }}
+              className="w-full disabled:opacity-60"
+            >
+              Back
+            </Button>
+            <Button
+              variant="pill"
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full disabled:opacity-60"
+            >
+              {isSubmitting ? 'Joining…' : teamDetails.visibility === 'PRIVATE' ? 'Request to Join' : 'Join Team'}
+            </Button>
+          </div>
+        </form>
+      )}
     </main>
   )
 }

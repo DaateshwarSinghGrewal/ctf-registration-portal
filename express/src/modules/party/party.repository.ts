@@ -46,6 +46,30 @@ export function findParty(partyId: string, db: Db = pool): Promise<PartyRecord |
     .then((result) => result.rows[0] ?? null);
 }
 
+export function listParties(limit: number, offset: number, db: Db = pool): Promise<PartyRecord[]> {
+  return db
+    .query<PartyRecord>(`SELECT ${PARTY_COLUMNS} FROM parties ORDER BY createdAt DESC LIMIT $1 OFFSET $2;`, [limit, offset])
+    .then((result) => result.rows);
+}
+
+export function countParties(db: Db = pool): Promise<number> {
+  return db.query<{ count: string }>(`SELECT count(*) FROM parties;`).then((result) => parseInt(result.rows[0]?.count ?? "0", 10));
+}
+
+export function listPublicParties(db: Db = pool): Promise<(PartyRecord & { membercount: string })[]> {
+  return db.query<(PartyRecord & { membercount: string })>(`
+    SELECT p.id, p.name, p.passwordHash AS "passwordhash", p.leaderId AS "leaderid",
+           p.maxPlayers AS "maxplayers", p.visibility, p.isLocked AS "islocked",
+           p.createdAt AS "createdat", p.updatedAt AS "updatedat",
+           COUNT(pm.userId) AS "membercount"
+    FROM parties p
+    LEFT JOIN party_members pm ON pm.partyId = p.id
+    WHERE p.visibility = 'PUBLIC' AND p.isLocked = false
+    GROUP BY p.id
+    ORDER BY p.createdAt DESC
+  `).then(res => res.rows);
+}
+
 /**
  * Reads the team and takes a row lock for the rest of the transaction.
  *

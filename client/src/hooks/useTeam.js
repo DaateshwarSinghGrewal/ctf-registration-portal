@@ -8,9 +8,12 @@ import {
   getMyParty,
   joinParty,
   leaveParty,
-  removeMember
+  removeMember,
+  updatePartyVisibility,
+  transferLeadership
 } from '../api/party.js'
 import { saveProfile } from '../api/profile.js'
+import { requestToJoin as requestToJoinAPI } from '../api/joinRequest.js'
 
 /**
  * Owns the signed-in user's team state.
@@ -135,6 +138,12 @@ export function useTeam() {
     setPresence({ partyId, userIds: onlineUserIds })
   })
 
+  useSocketEvent(SOCKET_EVENTS.TEAM_JOIN_REQUEST_RESOLVED, ({ status }) => {
+    if (status === 'ACCEPTED') {
+      load()
+    }
+  })
+
   /**
    * Saves the profile, then performs the team action.
    *
@@ -174,6 +183,14 @@ export function useTeam() {
     [submitWithProfile]
   )
 
+  const requestJoin = useCallback(
+    async ({ inviteCode, playerDetails }) => {
+      const result = await submitWithProfile(playerDetails, () => requestToJoinAPI(inviteCode))
+      return result
+    },
+    [submitWithProfile]
+  )
+
   const leave = useCallback(async () => {
     if (!team) return
     await leaveParty(team.id)
@@ -195,6 +212,28 @@ export function useTeam() {
     [team]
   )
 
+  const setVisibility = useCallback(
+    async (visibility) => {
+      if (!team) return
+      const updated = await updatePartyVisibility(team.id, visibility)
+      if (updated) {
+        setTeam(prev => prev ? { ...prev, ...updated } : updated)
+      }
+    },
+    [team]
+  )
+
+  const transferLeader = useCallback(
+    async (newLeaderId) => {
+      if (!team) return
+      const updated = await transferLeadership(team.id, newLeaderId)
+      if (updated) {
+        setTeam(prev => prev ? { ...prev, ...updated } : updated)
+      }
+    },
+    [team]
+  )
+
   // Derived, so a stale snapshot for a team the user has left can never light up
   // the wrong roster, and no separate reset is needed when the team goes away.
   const onlineUserIds = team && presence.partyId === team.id ? presence.userIds : []
@@ -209,8 +248,11 @@ export function useTeam() {
     reload: load,
     create,
     join,
+    requestJoin,
     leave,
     disband,
-    kick
+    kick,
+    setVisibility,
+    transferLeader
   }
 }

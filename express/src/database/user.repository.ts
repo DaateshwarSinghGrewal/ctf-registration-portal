@@ -43,7 +43,7 @@ function baseUsernameFrom(email: string): string {
 export async function upsertGoogleUser(
   googleId: string,
   email: string,
-  role: Role
+  role?: Role
 ): Promise<UserRecord> {
   const base = baseUsernameFrom(email);
 
@@ -59,13 +59,13 @@ export async function upsertGoogleUser(
     try {
       const result = await pool.query<UserRecord>(
         `INSERT INTO user_auth (googleId, email, username, role, lastLogin)
-         VALUES ($1, $2, $3, $4, NOW())
+         VALUES ($1, $2, $3, COALESCE($4, 'PLAYER'), NOW())
          ON CONFLICT (googleId) DO UPDATE
            SET lastLogin = NOW(),
                email     = EXCLUDED.email,
-               role      = EXCLUDED.role
+               role      = COALESCE($4, user_auth.role)
          ${RETURNING};`,
-        [googleId, email, username, role]
+        [googleId, email, username, role ?? null]
       );
       return result.rows[0]!;
     } catch (error) {

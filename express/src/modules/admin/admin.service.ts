@@ -15,8 +15,8 @@ import {
   removeUserFromPartyRoom,
 } from "../../realtime/socket.emitter.js";
 import { SocketEvent } from "../../realtime/socket.events.js";
-import { findMembers, findParty } from "../party/party.repository.js";
-import { toMembers } from "../party/party.types.js";
+import { findMembers, findParty, listParties as listPartyRows, countParties } from "../party/party.repository.js";
+import { toMembers, toSummary, type PartySummary } from "../party/party.types.js";
 
 /**
  * Admin operations.
@@ -59,6 +59,14 @@ export async function getUser(userId: string): Promise<AdminUserView> {
   const user = await findUserById(userId);
   if (!user) throw ApiError.notFound("User not found");
   return toView(user);
+}
+
+export async function listParties(
+  limit: number,
+  offset: number
+): Promise<{ parties: PartySummary[]; total: number }> {
+  const [rows, total] = await Promise.all([listPartyRows(limit, offset), countParties()]);
+  return { parties: rows.map(r => toSummary(r, 0)), total };
 }
 
 export async function changeUserRole(

@@ -4,7 +4,6 @@ import { AuditAction } from "../audit/audit.types.js";
 import { findProfile, hasProfile, upsertProfile } from "./profile.repository.js";
 import { toProfile, type Profile, type ProfileInput } from "./profile.types.js";
 
-const UNIQUE_VIOLATION = "23505";
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   const row = await findProfile(userId);
@@ -22,25 +21,16 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 export async function saveProfile(userId: string, input: ProfileInput): Promise<Profile> {
   const existed = await hasProfile(userId);
 
-  try {
-    const row = await upsertProfile(userId, input);
+  const row = await upsertProfile(userId, input);
 
-    await recordAudit({
-      actorId: userId,
-      action: existed ? AuditAction.PROFILE_UPDATED : AuditAction.PROFILE_CREATED,
-      targetType: "user",
-      targetId: userId,
-    });
+  await recordAudit({
+    actorId: userId,
+    action: existed ? AuditAction.PROFILE_UPDATED : AuditAction.PROFILE_CREATED,
+    targetType: "user",
+    targetId: userId,
+  });
 
-    return toProfile(row);
-  } catch (error) {
-    if ((error as { code?: string }).code === UNIQUE_VIOLATION) {
-      throw ApiError.conflict(
-        "That roll number is already registered to another account."
-      );
-    }
-    throw error;
-  }
+  return toProfile(row);
 }
 
 /**

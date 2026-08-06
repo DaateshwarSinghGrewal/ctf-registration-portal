@@ -20,6 +20,18 @@
     max-width: 100vw;
   }
 
+  /* Custom Scrollbar for sleek dark look */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-black/20 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-amethyst/30 rounded-full hover:bg-amethyst/50 transition-colors;
+  }
+
   h1,
   h2,
   h3,

@@ -1,10 +1,15 @@
 import SiteLayout from '../layouts/SiteLayout.jsx'
 import AuthLayout from '../layouts/AuthLayout.jsx'
+import AdminLayout from '../layouts/AdminLayout.jsx'
 import WebsitePage from '../pages/Website/WebsitePage.jsx'
 import GoogleAuthPage from '../pages/GoogleAuth/GoogleAuthPage.jsx'
 import TeamManagementPage from '../pages/TeamManagement/TeamManagementPage.jsx'
 import CreateTeamPage from '../pages/TeamManagement/CreateTeamPage.jsx'
 import JoinTeamPage from '../pages/TeamManagement/JoinTeamPage.jsx'
+import AdminDashboardPage from '../pages/Admin/AdminDashboardPage.jsx'
+import AdminUsersPage from '../pages/Admin/AdminUsersPage.jsx'
+import AdminTeamsPage from '../pages/Admin/AdminTeamsPage.jsx'
+import AdminAuditPage from '../pages/Admin/AdminAuditPage.jsx'
 import NotFoundPage from '../pages/NotFound/NotFoundPage.jsx'
 import ProtectedRoute from './ProtectedRoute.jsx'
 
@@ -37,6 +42,21 @@ export const routes = [
           { path: '/team', element: <TeamManagementPage /> },
           { path: '/team/create', element: <CreateTeamPage /> },
           { path: '/team/join', element: <JoinTeamPage /> }
+        ]
+      }
+    ]
+  },
+  {
+    element: <ProtectedRoute requireAdmin={true} />,
+    children: [
+      {
+        path: '/admin',
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <AdminDashboardPage /> },
+          { path: 'users', element: <AdminUsersPage /> },
+          { path: 'teams', element: <AdminTeamsPage /> },
+          { path: 'audit', element: <AdminAuditPage /> }
         ]
       }
     ]

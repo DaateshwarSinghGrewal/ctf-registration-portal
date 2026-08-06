@@ -23,6 +23,16 @@ export async function getMyParty({ signal } = {}) {
   return payload?.data ?? null
 }
 
+export async function getPartyDetails(partyId, { signal } = {}) {
+  const payload = await api.get(`/party/${encodeURIComponent(partyId)}`, { signal })
+  return payload?.data ?? null
+}
+
+export async function getPublicParties({ signal } = {}) {
+  const payload = await api.get('/party/public', { signal })
+  return payload?.data ?? []
+}
+
 /**
  * POST /party/create — the backend generates the invite code and returns it as
  * the team's `id`. Requires a completed profile.
@@ -53,5 +63,17 @@ export async function removeMember({ partyId, userId }) {
   const payload = await api.delete(
     `/party/${encodeURIComponent(partyId)}/members/${encodeURIComponent(userId)}`
   )
+  return payload?.data ?? null
+}
+
+/** PATCH /party/:partyId/visibility — leader changes visibility (PUBLIC/PRIVATE) */
+export async function updatePartyVisibility(partyId, visibility) {
+  const payload = await api.patch(`/party/${encodeURIComponent(partyId)}/visibility`, { visibility })
+  return payload?.data ?? null
+}
+
+/** PATCH /party/:partyId/leader — leader transfers leadership to another member */
+export async function transferLeadership(partyId, newLeaderId) {
+  const payload = await api.patch(`/party/${encodeURIComponent(partyId)}/leader`, { newLeaderId })
   return payload?.data ?? null
 }

@@ -13,8 +13,8 @@ import { Role, type AuthenticatedUser, type GoogleProfile, type UserRecord } fro
  * means removing an address from ADMIN_EMAILS demotes that account, with no
  * database surgery.
  */
-function roleFor(email: string): Role {
-  return env.adminEmails.includes(email.toLowerCase()) ? Role.ADMIN : Role.PLAYER;
+function roleFor(email: string): Role | undefined {
+  return env.adminEmails.includes(email.toLowerCase()) ? Role.ADMIN : undefined;
 }
 
 /**
