@@ -22,25 +22,29 @@ export default function Landing() {
       ref={containerRef}
       className="relative w-full flex-col bg-void"
     >
-      
-      {/* Background Wrapper - Extends through the whole section, scrolls naturally */}
+
+      {/* Global Starfield - Covers the entire section including countdown timer */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div 
-          className="absolute inset-0 bg-cover bg-no-repeat opacity-60"
-          style={{ 
-            backgroundImage: `url(${bgImage})`,
-            backgroundPosition: 'center 75%' // Higher percentage shifts the background UP, aligning the vortex with Somnium
-          }}
-        />
-        <div className="absolute inset-0 bg-surface-gradient mix-blend-multiply" />
-        <StarfieldBackground density={40} glow={false} />
-        
-        {/* Smooth blend into the next section */}
-        <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-void to-transparent" />
+        <StarfieldBackground density={50} glow={false} />
       </div>
 
       {/* HERO WRAPPER - Fits the main screen perfectly */}
       <div className="relative z-10 flex min-h-[90vh] w-full flex-col items-center justify-center overflow-hidden px-3 pt-16">
+        
+        {/* Background Wrapper - Scoped strictly to the 90vh hero so positioning math doesn't break on laptops */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div 
+            className="absolute inset-0 bg-cover bg-no-repeat opacity-60"
+            style={{ 
+              backgroundImage: `url(${bgImage})`,
+              backgroundPosition: 'center 60%' // Lower percentage shifts it down, higher percentage shifts it up
+            }}
+          />
+          <div className="absolute inset-0 bg-surface-gradient mix-blend-multiply" />
+          
+          {/* Smooth blend into the next section */}
+          <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-void to-transparent" />
+        </div>
 
         {/* Hero Content (Cohesively grouped with ultra-tight spacing) */}
         <div className="relative z-10 flex flex-col items-center w-full max-w-4xl text-center">
@@ -50,15 +54,15 @@ export default function Landing() {
             <div className="flex items-center gap-4 sm:gap-6">
               <img src={ccsLogo} alt="CCS Logo" className="h-10 sm:h-12 md:h-16 w-auto object-contain opacity-90" />
               <span className="font-heading text-base sm:text-lg font-semibold text-white/30">×</span>
-              <img src={froshLogo} alt="Frosh Logo" className="h-14 sm:h-21 md:h-30 w-auto object-contain opacity-90" />
+              <img src={froshLogo} alt="Frosh Logo" className="h-14 sm:h-20 md:h-28 w-auto object-contain opacity-90" />
             </div>
-            <p className="font-heading text-[10px] sm:text-xs md:text-base font-semibold uppercase tracking-widest text-crystal-light">
+            <p className="font-heading text-[10px] sm:text-xs md:text-base font-semibold uppercase tracking-widest text-crystal-light -mt-1 sm:-mt-2 md:-mt-4">
               PRESENTS
             </p>
           </div>
 
           {/* Somnium Logo */}
-          <h1 className="relative flex justify-center w-full -mt-6 -mb-4 sm:-mt-16 sm:-mb-12 md:-mt-40 md:-mb-32 pointer-events-none select-none">
+          <h1 className="relative flex justify-center w-full mt-10 mb-14 sm:-mt-8 sm:-mb-8 md:-mt-16 md:-mb-16 pointer-events-none select-none">
             <span className="sr-only">Somnium</span>
             <img 
               src={somniumText} 
@@ -68,8 +72,13 @@ export default function Landing() {
           </h1>
 
           {/* Subtitle */}
-          <p className="font-heading text-lg font-medium tracking-[0.2em] text-white/80 sm:text-xl mb-12">
+          <p className="font-heading text-lg font-medium tracking-[0.2em] text-white/80 sm:text-xl mb-4">
             DREAM. DECODE. ESCAPE.
+          </p>
+
+          {/* Date */}
+          <p className="font-heading text-xl font-bold tracking-[0.3em] text-amethyst-bright sm:text-2xl mb-12">
+            16 AUGUST
           </p>
 
           {/* Minimalist CTA */}

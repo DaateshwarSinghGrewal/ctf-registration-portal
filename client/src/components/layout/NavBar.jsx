@@ -44,8 +44,8 @@ export default function NavBar() {
           className="flex items-center gap-3 transition-opacity duration-200 hover:opacity-80"
           onClick={() => setIsMobileMenuOpen(false)}
         >
-          <img src={somniumLogo} alt="" className="h-7 sm:h-8 w-auto invert-asset opacity-90" aria-hidden="true" />
-          <span className="font-brand text-xl sm:text-2xl font-bold tracking-wide text-white">SOMNIUM</span>
+          <img src={somniumLogo} alt="" className="h-8 sm:h-10 w-auto invert-asset opacity-90 scale-[1.7] origin-left" aria-hidden="true" />
+          <span className="font-brand text-xl sm:text-2xl font-bold tracking-wide text-white ml-2">SOMNIUM</span>
         </Link>
 
         {/* Desktop Links */}
