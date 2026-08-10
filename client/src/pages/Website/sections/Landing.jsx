@@ -17,6 +17,26 @@ export default function Landing() {
   const { scrollY } = useScroll()
   const y = useTransform(scrollY, [0, 1000], [0, 300])
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.3
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { duration: 1, ease: [0.16, 1, 0.3, 1] }
+    }
+  }
+
   return (
     <section 
       ref={containerRef}
@@ -33,8 +53,11 @@ export default function Landing() {
         
         {/* Background Wrapper - Scoped strictly to the 90vh hero so positioning math doesn't break on laptops */}
         <div className="absolute inset-0 z-0 pointer-events-none">
-          <div 
-            className="absolute inset-0 bg-cover bg-no-repeat opacity-60"
+          <motion.div 
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 0.6, scale: 1 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+            className="absolute inset-0 bg-cover bg-no-repeat"
             style={{ 
               backgroundImage: `url(${bgImage})`,
               backgroundPosition: 'center 60%' // Lower percentage shifts it down, higher percentage shifts it up
@@ -47,10 +70,15 @@ export default function Landing() {
         </div>
 
         {/* Hero Content (Cohesively grouped with ultra-tight spacing) */}
-        <div className="relative z-10 flex flex-col items-center w-full max-w-4xl text-center">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="relative z-10 flex flex-col items-center w-full max-w-4xl text-center"
+        >
           
           {/* Sponsor Logos */}
-          <div className="flex flex-col items-center gap-2">
+          <motion.div variants={itemVariants} className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-4 sm:gap-6">
               <img src={ccsLogo} alt="CCS Logo" className="h-10 sm:h-12 md:h-16 w-auto object-contain opacity-90" />
               <span className="font-heading text-base sm:text-lg font-semibold text-white/30">×</span>
@@ -59,44 +87,52 @@ export default function Landing() {
             <p className="font-heading text-[10px] sm:text-xs md:text-base font-semibold uppercase tracking-widest text-crystal-light -mt-1 sm:-mt-2 md:-mt-4">
               PRESENTS
             </p>
-          </div>
+          </motion.div>
 
           {/* Somnium Logo */}
-          <h1 className="relative flex justify-center w-full mt-10 mb-14 sm:-mt-8 sm:-mb-8 md:-mt-16 md:-mb-16 pointer-events-none select-none">
+          <motion.h1 variants={itemVariants} className="relative flex justify-center w-full mt-10 mb-14 sm:-mt-8 sm:-mb-8 md:-mt-16 md:-mb-16 pointer-events-none select-none">
             <span className="sr-only">Somnium</span>
             <img 
               src={somniumText} 
               alt="Somnium Logo" 
               className="w-full max-w-[700px] md:max-w-[900px] filter drop-shadow-[0_0_30px_rgba(168,85,247,0.3)]" 
             />
-          </h1>
+          </motion.h1>
 
           {/* Subtitle */}
-          <p className="font-heading text-lg font-medium tracking-[0.2em] text-white/80 sm:text-xl mb-4">
+          <motion.p variants={itemVariants} className="font-heading text-lg font-medium tracking-[0.2em] text-white/80 sm:text-xl mb-4">
             DREAM. DECODE. ESCAPE.
-          </p>
+          </motion.p>
 
           {/* Date */}
-          <p className="font-heading text-xl font-bold tracking-[0.3em] text-amethyst-bright sm:text-2xl mb-12">
+          <motion.p variants={itemVariants} className="font-heading text-xl font-bold tracking-[0.3em] text-amethyst-bright sm:text-2xl mb-12">
             16 AUGUST
-          </p>
+          </motion.p>
 
           {/* Minimalist CTA */}
-          <Button 
-            variant="text-link" 
-            to="/auth" 
-            className="text-sm md:text-base tracking-[0.2em] hover:scale-105 transition-transform duration-300"
-          >
-            REGISTER NOW
-          </Button>
-        </div>
+          <motion.div variants={itemVariants}>
+            <Button 
+              variant="text-link" 
+              to="/auth" 
+              className="text-sm md:text-base tracking-[0.2em] hover:scale-105 transition-transform duration-300"
+            >
+              REGISTER NOW
+            </Button>
+          </motion.div>
+        </motion.div>
 
       </div>
 
       {/* COUNTDOWN WRAPPER - Pushed below the fold, visible on scroll */}
-      <div className="relative z-10 flex w-full justify-center px-6 py-28 pb-24">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 flex w-full justify-center px-6 py-28 pb-24"
+      >
         <CountdownTimer />
-      </div>
+      </motion.div>
 
     </section>
   )
