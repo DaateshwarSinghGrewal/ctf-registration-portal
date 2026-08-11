@@ -27,10 +27,9 @@ export async function startServer(): Promise<void> {
   const io = createSocketServer(httpServer);
   registerChannel(new SocketNotificationChannel());
 
-  httpServer.listen(env.port, () => {
-    logger.info(`API listening on http://localhost:${env.port} (${env.nodeEnv})`);
+  httpServer.listen(env.port, '0.0.0.0', () => {
+    logger.info(`API listening on http://0.0.0.0:${env.port} (${env.nodeEnv})`);
     logger.info(`CORS origins: ${env.frontendUrls.join(", ")}`);
-
   });
 
   installShutdownHandlers(httpServer, io);
