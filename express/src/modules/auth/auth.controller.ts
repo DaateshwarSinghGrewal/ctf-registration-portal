@@ -90,12 +90,11 @@ export async function googleCallback(req: Request, res: Response): Promise<void>
       role: user.role,
     };
 
-    // lastLogin is refreshed by the upsert itself — no extra write needed.
+    
     res.cookie(TOKEN_COOKIE, signAccessToken(payload), {
       ...COOKIE_OPTIONS,
       maxAge: COOKIE_MAX_AGE_MS,
     });
-    const token = signAccessToken(payload);
 
     await recordAudit({
       actorId: user.userid,
@@ -105,28 +104,10 @@ export async function googleCallback(req: Request, res: Response): Promise<void>
       ipAddress: req.ip ?? null,
     });
 
+    res.clearCookie(ORIGIN_COOKIE, { path: "/auth", domain: env.cookie.domain });
+
     const target = frontendUrl(req, "/team");
-    // res.clearCookie(ORIGIN_COOKIE, { path: "/auth", domain: env.cookie.domain });
-
-    // Vercel proxy strips Set-Cookie on external rewrites. We bypass this completely
-    // by injecting the cookie directly into the browser via JavaScript before navigating.
-    const cookieString = `${TOKEN_COOKIE}=${token}; Path=/; Max-Age=${COOKIE_MAX_AGE_MS / 1000}; Secure; SameSite=Lax`;
-
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-    res.status(200).send(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta http-equiv="refresh" content="0;url=${target}">
-        </head>
-        <body>
-          <script>
-            document.cookie = "${cookieString}";
-            window.location.href = "${target}";
-          </script>
-        </body>
-      </html>
-    `);
+    res.redirect(target);
   } catch (error) {
     // Handled here rather than delegated to errorHandler: that would send JSON,
     // and this response is a browser navigation.

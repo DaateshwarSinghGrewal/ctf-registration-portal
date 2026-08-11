@@ -30,11 +30,7 @@ export async function startServer(): Promise<void> {
   httpServer.listen(env.port, () => {
     logger.info(`API listening on http://localhost:${env.port} (${env.nodeEnv})`);
     logger.info(`CORS origins: ${env.frontendUrls.join(", ")}`);
-    if (env.adminEmails.length === 0) {
-      // Worth saying out loud: with no allow-list, /admin/* is unreachable by
-      // anyone, and the symptom is a confusing 403 for a legitimate admin.
-      logger.warn("ADMIN_EMAILS is empty — no account can access /admin routes");
-    }
+
   });
 
   installShutdownHandlers(httpServer, io);

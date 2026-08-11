@@ -35,15 +35,12 @@ function baseUsernameFrom(email: string): string {
  * changes their Google email must stay the same account rather than becoming a
  * second one (which would orphan their team membership).
  *
- * `role` is passed in from the ADMIN_EMAILS allow-list and re-applied on every
- * sign-in, so removing an address from the list demotes that account on its
- * next login. It is COALESCEd on insert so the column default still governs
- * when no role is supplied.
+ *
+ * Role defaults to 'PLAYER' on creation and is preserved on subsequent logins.
  */
 export async function upsertGoogleUser(
   googleId: string,
-  email: string,
-  role?: Role
+  email: string
 ): Promise<UserRecord> {
   const base = baseUsernameFrom(email);
 
@@ -59,13 +56,12 @@ export async function upsertGoogleUser(
     try {
       const result = await pool.query<UserRecord>(
         `INSERT INTO user_auth (googleId, email, username, role, lastLogin)
-         VALUES ($1, $2, $3, COALESCE($4, 'PLAYER'), NOW())
+         VALUES ($1, $2, $3, 'PLAYER', NOW())
          ON CONFLICT (googleId) DO UPDATE
            SET lastLogin = NOW(),
-               email     = EXCLUDED.email,
-               role      = COALESCE($4, user_auth.role)
+               email     = EXCLUDED.email
          ${RETURNING};`,
-        [googleId, email, username, role ?? null]
+        [googleId, email, username]
       );
       return result.rows[0]!;
     } catch (error) {

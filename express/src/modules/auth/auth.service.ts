@@ -1,21 +1,8 @@
-import { env } from "../../config/env.js";
 import { findUserById, upsertGoogleUser } from "../../database/user.repository.js";
 import { hasProfile } from "../profile/profile.repository.js";
 import { Role, type AuthenticatedUser, type GoogleProfile, type UserRecord } from "./auth.types.js";
 
-/**
- * Resolves the role for an email at sign-in time.
- *
- * Role is derived from configuration rather than stored-and-forgotten because
- * there was previously no way to create the first ADMIN at all: every account
- * defaulted to PLAYER and /admin/* was unreachable by anyone, including
- * whoever needed to promote the first admin. Re-deriving on each login also
- * means removing an address from ADMIN_EMAILS demotes that account, with no
- * database surgery.
- */
-function roleFor(email: string): Role | undefined {
-  return env.adminEmails.includes(email.toLowerCase()) ? Role.ADMIN : undefined;
-}
+
 
 /**
  * Returns the `user_auth` row for a verified Google profile, creating it on
@@ -23,7 +10,7 @@ function roleFor(email: string): Role | undefined {
  * registration portal, not an error.
  */
 export function findOrCreateUserFromGoogle(profile: GoogleProfile): Promise<UserRecord> {
-  return upsertGoogleUser(profile.googleId, profile.email, roleFor(profile.email));
+  return upsertGoogleUser(profile.googleId, profile.email);
 }
 
 /**

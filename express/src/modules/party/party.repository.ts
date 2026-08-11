@@ -56,18 +56,20 @@ export function countParties(db: Db = pool): Promise<number> {
   return db.query<{ count: string }>(`SELECT count(*) FROM parties;`).then((result) => parseInt(result.rows[0]?.count ?? "0", 10));
 }
 
-export function listPublicParties(db: Db = pool): Promise<(PartyRecord & { membercount: string })[]> {
-  return db.query<(PartyRecord & { membercount: string })>(`
+export function listPublicParties(limit: number, offset: number, db: Db = pool): Promise<(PartyRecord & { membercount: string, full_count: string })[]> {
+  return db.query<(PartyRecord & { membercount: string, full_count: string })>(`
     SELECT p.id, p.name, p.passwordHash AS "passwordhash", p.leaderId AS "leaderid",
            p.maxPlayers AS "maxplayers", p.visibility, p.isLocked AS "islocked",
            p.createdAt AS "createdat", p.updatedAt AS "updatedat",
-           COUNT(pm.userId) AS "membercount"
+           COUNT(pm.userId) AS "membercount",
+           COUNT(*) OVER() AS full_count
     FROM parties p
     LEFT JOIN party_members pm ON pm.partyId = p.id
     WHERE p.visibility = 'PUBLIC' AND p.isLocked = false
     GROUP BY p.id
     ORDER BY p.createdAt DESC
-  `).then(res => res.rows);
+    LIMIT $1 OFFSET $2
+  `, [limit, offset]).then(res => res.rows);
 }
 
 /**

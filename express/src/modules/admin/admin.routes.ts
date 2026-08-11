@@ -8,7 +8,14 @@ import { Role } from "../auth/auth.types.js";
 import { AuditAction } from "../audit/audit.types.js";
 import { updateStatus } from "../event/event.controller.js";
 import { partyIdSchema } from "../party/party.schema.js";
+import { createRateLimiter } from "../../core/middleware/rateLimiter.js";
 import * as controller from "./admin.controller.js";
+
+const writeLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 60,
+  keyPrefix: "admin_write",
+});
 
 const router = Router();
 
@@ -34,6 +41,7 @@ router.get(
 
 router.patch(
   "/users/:userId/role",
+  writeLimiter,
   validate({ params: userIdParamSchema, body: z.object({ role: z.enum(Role) }) }),
   asyncHandler(controller.changeUserRole)
 );
@@ -43,12 +51,14 @@ router.get("/parties", validate({ query: paginationSchema }), asyncHandler(contr
 
 router.delete(
   "/parties/:partyId",
+  writeLimiter,
   validate({ params: z.object({ partyId: partyIdSchema }) }),
   asyncHandler(controller.deleteParty)
 );
 
 router.delete(
   "/parties/:partyId/members/:userId",
+  writeLimiter,
   validate({
     params: z.object({
       partyId: partyIdSchema,
@@ -61,6 +71,7 @@ router.delete(
 /* --- registration control ------------------------------------------------ */
 router.patch(
   "/registration",
+  writeLimiter,
   validate({
     body: z.object({
       registrationOpen: z.boolean(),

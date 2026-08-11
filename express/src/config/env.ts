@@ -40,17 +40,6 @@ const schema = z.object({
   /** 32 chars minimum: a short HS256 secret is brute-forceable offline. */
   JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
 
-  /** Emails promoted to ADMIN on sign-in. Without this nobody can reach /admin. */
-  ADMIN_EMAILS: z
-    .string()
-    .default("")
-    .transform((value) =>
-      value
-        .split(",")
-        .map((email) => email.trim().toLowerCase())
-        .filter(Boolean)
-    ),
-
   /** Absent = no Redis. Rate limiting falls back to in-memory; sockets stay single-node. */
   REDIS_URL: z.string().min(1).optional(),
 
@@ -98,7 +87,6 @@ export const env = {
   frontendUrls: raw.FRONTEND_URL,
 
   jwtSecret: raw.JWT_SECRET,
-  adminEmails: raw.ADMIN_EMAILS,
 
   redisUrl: raw.REDIS_URL,
 

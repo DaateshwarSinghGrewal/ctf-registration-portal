@@ -2,7 +2,14 @@ import { Router } from "express";
 import { z } from "zod";
 import { asyncHandler } from "../../core/http/asyncHandler.js";
 import { validate } from "../../core/middleware/validate.js";
+import { createRateLimiter } from "../../core/middleware/rateLimiter.js";
 import { listMine, markAllRead, markOneRead } from "./notification.controller.js";
+
+const writeLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 60,
+  keyPrefix: "notification_write",
+});
 
 /**
  * Notification inbox.
@@ -27,10 +34,11 @@ const idParamSchema = z.object({ notificationId: z.uuid() });
 
 router.get("/", validate({ query: listQuerySchema }), asyncHandler(listMine));
 
-router.post("/read-all", asyncHandler(markAllRead));
+router.post("/read-all", writeLimiter, asyncHandler(markAllRead));
 
 router.post(
   "/:notificationId/read",
+  writeLimiter,
   validate({ params: idParamSchema }),
   asyncHandler(markOneRead)
 );

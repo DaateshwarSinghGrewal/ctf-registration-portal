@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import helmet from "helmet";
 import { env, isOriginAllowed } from "./config/env.js";
 import passport from "./config/passport.js";
 import { asyncHandler } from "./core/http/asyncHandler.js";
@@ -14,7 +15,13 @@ import joinRequestRouter from "./modules/joinRequest/joinRequest.routes.js";
 import profileRouter from "./modules/profile/profile.routes.js";
 import notificationRouter from "./modules/notification/notification.routes.js";
 import { getStatus } from "./modules/event/event.controller.js";
+import { createRateLimiter } from "./core/middleware/rateLimiter.js";
 
+const globalLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 300,
+  keyPrefix: "global",
+});
 /**
  * Builds the Express application.
  *
@@ -30,9 +37,15 @@ export function createApp(): Express {
   // every user share one rate-limit bucket.
   app.set("trust proxy", 1);
 
-  // The API returns JSON to a SPA, never HTML, so there is nothing for this
-  // header to advertise but the server implementation.
-  app.disable("x-powered-by");
+  // Security headers: HSTS, X-Content-Type-Options, X-Frame-Options,
+  // Referrer-Policy, and hides X-Powered-By. CSP is left to the SPA — this
+  // API only returns JSON, so a restrictive default-src here would not protect
+  // the page the user actually sees.
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+    })
+  );
 
   // The SPA is on a different origin and authenticates with a cookie, so the
   // browser needs both an explicit origin and credentials. A callback rather
@@ -55,6 +68,8 @@ export function createApp(): Express {
     res.status(200).json({ success: true, message: "OK", data: { status: "up" } });
   });
 
+  app.use(globalLimiter);
+
   // Public: the landing page shows registration state before anyone signs in.
   app.get("/event/status", asyncHandler(getStatus));
 
@@ -67,9 +82,7 @@ export function createApp(): Express {
   app.use("/party", authenticateUser, partyRouter);
   app.use("/join-requests", authenticateUser, joinRequestRouter);
   app.use("/notifications", authenticateUser, notificationRouter);
-
-  // Order matters: notFound must follow every route, and errorHandler must be
-  // last so it receives what they pass to next().
+  
   app.use(notFound);
   app.use(errorHandler);
 

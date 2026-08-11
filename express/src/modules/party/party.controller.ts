@@ -58,7 +58,8 @@ export async function getMyParty(req: Request, res: Response): Promise<void> {
 }
 
 export async function listPublicParties(req: Request, res: Response): Promise<void> {
-  const parties = await partyService.listPublicParties();
+  const { limit, offset } = req.query as unknown as { limit: number; offset: number };
+  const parties = await partyService.listPublicParties(limit, offset);
   ok(res, parties);
 }
 

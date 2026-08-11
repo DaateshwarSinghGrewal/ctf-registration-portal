@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Copy, Plus, LogIn, LogOut, Trash2, X, Crown, User as UserIcon } from 'lucide-react'
+import { Copy, Plus, LogIn, LogOut, Trash2, X, Crown, User as UserIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import Button from '../../components/ui/Button.jsx'
 import NoiseDarkPurpleGradientWithSquares from '../../components/ui/noise-dark-blue-gradient-with-squares.jsx'
 import { GradientHeading } from '../../components/ui/gradient-heading.jsx'
@@ -20,6 +20,18 @@ import { useJoinRequests } from '../../hooks/useJoinRequests.js'
  * two people in the same team see the same thing and a change by one appears for
  * the other without a reload.
  */
+
+const TeamSkeleton = () => (
+  <div className="surface-card p-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-black/20 animate-pulse border border-white/5">
+    <div className="flex flex-col items-center md:items-start w-full md:w-auto">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="h-5 w-32 bg-white/10 rounded"></div>
+      </div>
+      <div className="h-3 w-24 bg-white/5 rounded mt-1"></div>
+    </div>
+    <div className="h-10 w-full md:w-28 bg-white/10 rounded-md"></div>
+  </div>
+)
 
 const EMPTY_PLAYER_DETAILS = {
   fullName: '',
@@ -41,6 +53,8 @@ export default function TeamManagementPage() {
   const [toastMessage, setToastMessage] = useState('')
   const [publicTeams, setPublicTeams] = useState([])
   const [isLoadingPublicTeams, setIsLoadingPublicTeams] = useState(false)
+  const [publicTeamsPage, setPublicTeamsPage] = useState(0)
+  const [totalPublicTeams, setTotalPublicTeams] = useState(0)
 
   // -- Form State --
   const [teamNameInput, setTeamNameInput] = useState('')
@@ -117,13 +131,31 @@ export default function TeamManagementPage() {
     
     const controller = new AbortController()
     setIsLoadingPublicTeams(true)
-    getPublicParties({ signal: controller.signal })
-      .then(teams => setPublicTeams(teams))
+    const limit = 5
+    getPublicParties({ limit, offset: publicTeamsPage * limit, signal: controller.signal })
+      .then(({ teams, total }) => {
+        setPublicTeams(prev => publicTeamsPage === 0 ? teams : [...prev, ...teams])
+        setTotalPublicTeams(total)
+      })
       .catch(() => {})
       .finally(() => setIsLoadingPublicTeams(false))
       
     return () => controller.abort()
-  }, [isLoading, team])
+  }, [isLoading, team, publicTeamsPage])
+
+  const observer = useRef()
+  const lastTeamElementRef = useCallback(node => {
+    if (isLoadingPublicTeams) return
+    if (observer.current) observer.current.disconnect()
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && publicTeams.length < totalPublicTeams) {
+        setPublicTeamsPage(prev => prev + 1)
+      }
+    })
+    
+    if (node) observer.current.observe(node)
+  }, [isLoadingPublicTeams, publicTeams.length, totalPublicTeams])
 
   const handlePlayerDetailChange = (e) => {
     const { name, value } = e.target
@@ -166,6 +198,7 @@ export default function TeamManagementPage() {
     setTeamCodeInput('')
     setJoinModalStep(1)
     setJoinTeamDetails(null)
+    setPublicTeamsPage(0)
   }
 
   const renderPlayerFields = () => (
@@ -874,42 +907,52 @@ export default function TeamManagementPage() {
                 <div className="flex flex-col gap-6">
                   <div className="flex items-center justify-between border-b border-white/10 pb-4">
                     <h3 className="font-heading text-lg tracking-widest text-white uppercase">Public Directory</h3>
-                    {isLoadingPublicTeams && (
-                      <span className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light animate-pulse">Scanning...</span>
-                    )}
                   </div>
                   
-                  <div className="flex flex-col gap-4">
-                    {!isLoadingPublicTeams && publicTeams.length === 0 ? (
+                  <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    {publicTeams.length === 0 && !isLoadingPublicTeams ? (
                       <div className="surface-card p-6 text-center">
                         <p className="text-sm font-body text-neutral-400">No public squads found. Be the first to create one!</p>
                       </div>
                     ) : (
-                      publicTeams.map(pt => (
-                        <div key={pt.id} className="surface-card p-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-black/20 hover:bg-white/5 transition-colors group">
-                          <div className="flex flex-col items-center md:items-start">
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-heading text-white tracking-wider text-lg">{pt.name}</h4>
-                              {pt.hasPassword && <span title="Password Protected" className="text-xs bg-white/10 px-2 py-0.5 rounded text-neutral-400">🔒</span>}
+                      <>
+                        {publicTeams.map(pt => (
+                          <div key={pt.id} className="surface-card p-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-black/20 hover:bg-white/5 transition-colors group">
+                            <div className="flex flex-col items-center md:items-start">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-heading text-white tracking-wider text-lg">{pt.name}</h4>
+                                {pt.hasPassword && <span title="Password Protected" className="text-xs bg-white/10 px-2 py-0.5 rounded text-neutral-400">🔒</span>}
+                              </div>
+                              <p className="text-xs font-body text-neutral-500 uppercase">
+                                {pt.memberCount} / {pt.maxPlayers} Operatives
+                              </p>
                             </div>
-                            <p className="text-xs font-body text-neutral-500 uppercase">
-                              {pt.memberCount} / {pt.maxPlayers} Operatives
-                            </p>
+                            
+                            <Button 
+                              variant="primary" 
+                              disabled={pt.memberCount >= pt.maxPlayers}
+                              onClick={() => {
+                                 setTeamCodeInput(pt.id)
+                                 setJoinTeamDetails(pt)
+                                 setJoinModalStep(2)
+                              }}
+                            >
+                              {pt.memberCount >= pt.maxPlayers ? 'Squad Full' : 'Join Squad'}
+                            </Button>
                           </div>
-                          
-                          <Button 
-                            variant="primary" 
-                            disabled={pt.memberCount >= pt.maxPlayers}
-                            onClick={() => {
-                               setTeamCodeInput(pt.id)
-                               setJoinTeamDetails(pt)
-                               setJoinModalStep(2)
-                            }}
-                          >
-                            {pt.memberCount >= pt.maxPlayers ? 'Squad Full' : 'Join Squad'}
-                          </Button>
-                        </div>
-                      ))
+                        ))}
+                        
+                        {isLoadingPublicTeams && (
+                          <>
+                            <TeamSkeleton />
+                            <TeamSkeleton />
+                          </>
+                        )}
+                        
+                        {!isLoadingPublicTeams && publicTeams.length < totalPublicTeams && (
+                          <div ref={lastTeamElementRef} className="h-4 w-full flex-shrink-0" />
+                        )}
+                      </>
                     )}
                   </div>
 

@@ -81,7 +81,7 @@ export function createSocketServer(httpServer: HttpServer): Server {
    * its members.
    */
   if (redis) {
-    io.adapter(createAdapter(redis, redis.duplicate()));
+    io.adapter(createAdapter(redis, redis.duplicate({ enableOfflineQueue: true })));
     logger.info("Socket.IO using Redis adapter (multi-instance broadcast)");
   }
 

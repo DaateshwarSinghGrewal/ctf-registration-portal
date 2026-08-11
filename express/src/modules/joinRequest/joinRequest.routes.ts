@@ -2,7 +2,14 @@ import { Router } from "express";
 import { z } from "zod";
 import { asyncHandler } from "../../core/http/asyncHandler.js";
 import { validate } from "../../core/middleware/validate.js";
+import { createRateLimiter } from "../../core/middleware/rateLimiter.js";
 import * as controller from "./joinRequest.controller.js";
+
+const writeLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 30,
+  keyPrefix: "join_request_write",
+});
 
 /**
  * Resolution endpoints for join requests, mounted at /join-requests.
@@ -23,18 +30,21 @@ const requestIdParamSchema = z.object({
 
 router.post(
   "/:requestId/accept",
+  writeLimiter,
   validate({ params: requestIdParamSchema }),
   asyncHandler(controller.acceptRequest)
 );
 
 router.post(
   "/:requestId/reject",
+  writeLimiter,
   validate({ params: requestIdParamSchema }),
   asyncHandler(controller.rejectRequest)
 );
 
 router.delete(
   "/:requestId",
+  writeLimiter,
   validate({ params: requestIdParamSchema }),
   asyncHandler(controller.cancelRequest)
 );

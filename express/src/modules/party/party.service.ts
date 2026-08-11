@@ -95,9 +95,13 @@ export async function getMyParty(userId: string): Promise<PartyDetails | null> {
   return toDetails(party, await findMembers(party.id));
 }
 
-export async function listPublicParties(): Promise<PartySummary[]> {
-  const rows = await listPublicPartiesRepo();
-  return rows.map(row => toSummary(row, parseInt(row.membercount, 10)));
+export async function listPublicParties(limit: number, offset: number): Promise<{ teams: PartySummary[], total: number }> {
+  const rows = await listPublicPartiesRepo(limit, offset);
+  const total = rows.length > 0 ? parseInt(rows[0]!.full_count, 10) : 0;
+  return {
+    teams: rows.map(row => toSummary(row, parseInt(row.membercount, 10))),
+    total,
+  };
 }
 
 /* -------------------------------------------------------------------------- */

@@ -1,8 +1,15 @@
 import { Router } from "express";
 import { asyncHandler } from "../../core/http/asyncHandler.js";
 import { validate } from "../../core/middleware/validate.js";
+import { createRateLimiter } from "../../core/middleware/rateLimiter.js";
 import { getMyProfile, saveMyProfile } from "./profile.controller.js";
 import { profileInputSchema } from "./profile.schema.js";
+
+const writeLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 30,
+  keyPrefix: "profile_write",
+});
 
 /**
  * A user only ever reads or writes their own profile, so the id comes from the
@@ -21,6 +28,6 @@ router.get("/", asyncHandler(getMyProfile));
 
 // PUT, not POST: the client submits the whole form every time, so this is
 // idempotent replacement rather than incremental creation.
-router.put("/", validate({ body: profileInputSchema }), asyncHandler(saveMyProfile));
+router.put("/", writeLimiter, validate({ body: profileInputSchema }), asyncHandler(saveMyProfile));
 
 export default router;

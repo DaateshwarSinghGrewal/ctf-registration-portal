@@ -14,6 +14,7 @@ import {
   setPasswordSchema,
   setVisibilitySchema,
   transferLeadershipSchema,
+  paginationSchema,
 } from "./party.schema.js";
 import * as joinRequestController from "../joinRequest/joinRequest.controller.js";
 
@@ -146,7 +147,11 @@ router.delete(
 );
 
 /* --- read ---------------------------------------------------------------- */
-router.get("/public", asyncHandler(controller.listPublicParties));
+router.get(
+  "/public",
+  validate({ query: paginationSchema }),
+  asyncHandler(controller.listPublicParties)
+);
 
 // Last: a bare "/:partyId" would otherwise shadow every literal path above.
 router.get(

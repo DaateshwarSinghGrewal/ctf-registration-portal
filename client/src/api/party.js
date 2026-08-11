@@ -28,9 +28,13 @@ export async function getPartyDetails(partyId, { signal } = {}) {
   return payload?.data ?? null
 }
 
-export async function getPublicParties({ signal } = {}) {
-  const payload = await api.get('/party/public', { signal })
-  return payload?.data ?? []
+export async function getPublicParties({ limit = 50, offset = 0, signal } = {}) {
+  const query = new URLSearchParams({ limit, offset }).toString()
+  const payload = await api.get(`/party/public?${query}`, { signal })
+  return {
+    teams: payload?.data?.teams ?? [],
+    total: payload?.data?.total ?? 0
+  }
 }
 
 /**
