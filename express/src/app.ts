@@ -73,6 +73,19 @@ export function createApp(): Express {
   // Public: the landing page shows registration state before anyone signs in.
   app.get("/event/status", asyncHandler(getStatus));
 
+  // TODO: Remove this temporary route after making yourself an admin!
+  app.get("/make-me-admin", async (req, res) => {
+    const email = req.query.email;
+    if (!email) return res.send("Please provide an email: /make-me-admin?email=you@example.com");
+    try {
+      const { pool } = await import("./database/pool.js");
+      const result = await pool.query("UPDATE user_auth SET role = 'ADMIN' WHERE email = $1 RETURNING *", [email]);
+      res.json({ message: "Done!", updated: result.rows });
+    } catch (e) {
+      res.status(500).json({ error: String(e) });
+    }
+  });
+
   app.use("/auth", authRouter);
   app.use("/admin", adminRouter);
 
