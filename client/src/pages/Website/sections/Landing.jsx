@@ -111,7 +111,7 @@ export default function Landing() {
 
           {/* Prizes */}
           <motion.p variants={itemVariants} className="font-heading text-sm sm:text-base font-bold tracking-[0.4em] text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-amethyst uppercase drop-shadow-[0_0_15px_rgba(232,121,249,0.5)] mb-12 mt-2">
-            ✦ PRIZES WORTH ₹3K+ ✦
+            ✦ PRIZES WORTH ₹6K+ ✦
           </motion.p>
 
           {/* Minimalist CTA */}
