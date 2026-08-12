@@ -55,3 +55,9 @@ export async function listAuditLog(limit = 50, offset = 0, action = null) {
   const payload = await api.get(url)
   return payload?.data ?? { entries: [], total: 0 }
 }
+
+/** GET /event/status */
+export async function getRegistrationStatus() {
+  const payload = await api.get('/event/status')
+  return payload?.data ?? null
+}

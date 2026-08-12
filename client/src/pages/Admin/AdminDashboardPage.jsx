@@ -1,11 +1,25 @@
-import { useState } from 'react'
-import { updateRegistration } from '../../api/admin.js'
+import { useState, useEffect } from 'react'
+import { updateRegistration, getRegistrationStatus } from '../../api/admin.js'
 import Button from '../../components/ui/Button.jsx'
 
 export default function AdminDashboardPage() {
-  const [isOpen, setIsOpen] = useState(false) // Note: ideally we fetch current state on load
+  const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    async function fetchStatus() {
+      try {
+        const status = await getRegistrationStatus()
+        if (status) {
+          setIsOpen(status.registrationOpen)
+        }
+      } catch (err) {
+        console.error('Failed to fetch registration status:', err)
+      }
+    }
+    fetchStatus()
+  }, [])
 
   const handleToggle = async () => {
     setIsSubmitting(true)

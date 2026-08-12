@@ -1,3 +1,5 @@
+import { useRef } from 'react'
+import { useInView } from 'framer-motion'
 import SectionHeading from '../../../components/ui/SectionHeading.jsx'
 import Button from '../../../components/ui/Button.jsx'
 import StarfieldBackground from '../../../components/layout/StarfieldBackground.jsx'
@@ -8,6 +10,14 @@ import StarfieldBackground from '../../../components/layout/StarfieldBackground.
  * (e.g. YouTube/Vimeo), so this links out rather than routing internally.
  */
 export default function DemoVideo() {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, amount: 0.5 })
+
+  // Adding mute=1 is required by modern browsers to allow autoplay without user interaction
+  const videoSrc = isInView
+    ? "https://www.youtube.com/embed/xikh8mNeing?autoplay=1&mute=1"
+    : "https://www.youtube.com/embed/xikh8mNeing"
+
   return (
     <section className="section-shell relative px-6 pt-24 pb-12 sm:pt-32 sm:pb-16" id="demo">
       <StarfieldBackground density={50} glow={false} />
@@ -15,11 +25,11 @@ export default function DemoVideo() {
       <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-10 text-center">
         <SectionHeading eyebrow="See It in Motion" title="Somnium" accentWord="Teaser" align="center" />
 
-        <div className="aspect-video w-full max-w-5xl overflow-hidden surface-card border-none bg-void-soft relative group">
+        <div ref={ref} className="aspect-video w-full max-w-5xl overflow-hidden surface-card border-none bg-void-soft relative group">
           <div className="absolute inset-0 border border-white/10 group-hover:border-amethyst/50 transition-colors duration-300 pointer-events-none z-10" />
           <iframe
             className="absolute inset-0 h-full w-full"
-            src="https://www.youtube.com/embed/xikh8mNeing"
+            src={videoSrc}
             title="Teaser"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
