@@ -13,14 +13,14 @@ export default function DemoVideo() {
       <StarfieldBackground density={50} glow={false} />
 
       <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-10 text-center">
-        <SectionHeading eyebrow="See It in Motion" title="Demo" accentWord="Video" align="center" />
+        <SectionHeading eyebrow="See It in Motion" title="Somnium" accentWord="Teaser" align="center" />
 
         <div className="aspect-video w-full max-w-5xl overflow-hidden surface-card border-none bg-void-soft relative group">
           <div className="absolute inset-0 border border-white/10 group-hover:border-amethyst/50 transition-colors duration-300 pointer-events-none z-10" />
           <iframe
             className="absolute inset-0 h-full w-full"
             src="https://www.youtube.com/embed/xikh8mNeing"
-            title="Demo Video"
+            title="Teaser"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"

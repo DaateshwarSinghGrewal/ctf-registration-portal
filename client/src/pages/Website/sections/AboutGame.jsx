@@ -28,7 +28,7 @@ export default function AboutGame() {
             title="About the"
             accentWord="Game"
             accentVariant="crystal"
-            description="Somnium places every team inside a shared dream: five orbits, each holding its own challenges, each demanding a different kind of thinking to escape. Progress through the night sky one theme at a time, and wake only once every orbit has been cleared."
+            description="You and your group of friends are trapped in a world of dreams. Four dreams. Four memories of your past, each holding its own challenge, its own problems, and its own path to escape. Progress through your past one dream at a time. Will you and your team wake up first, or will you forever be trapped in this world of memories?"
           />
         </div>
       </div>

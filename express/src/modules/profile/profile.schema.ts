@@ -30,7 +30,7 @@ export const profileInputSchema = z.object({
     .trim()
     .min(2, "Discord username is too short")
     .max(64, "Discord username is too long")
-    .regex(/^[a-zA-Z0-9._#]+$/, "Discord username contains unsupported characters"),
+    .regex(/^((?!\d{4}$)(?!.*\.\.)[a-z0-9_][a-z0-9_.]{0,30}[a-z0-9_]|.{2,32}#[0-9]{4})$/, "Invalid Discord username format"),
 
   year: z.coerce
     .number()

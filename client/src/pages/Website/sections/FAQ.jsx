@@ -24,6 +24,10 @@ const faqs = [
     a: "Registrations close on 16th Aug at 6 pm. Make sure your entire team completes registration before the deadline."
   },
   {
+    q: "Is it compulsory to join the Discord server?",
+    a: "Yes. Discord is our primary hub for live announcements, hint drops, schedule updates, and real-time support throughout the event."
+  },
+  {
     q: "Do I need to bring/install any specific software or equipment?",
     a: "No pre-installed software is required. You only need a laptop or PC with a modern web browser and a stable internet connection."
   },
@@ -34,11 +38,8 @@ const faqs = [
   {
     q: "Whom do I reach out to if I get stuck while playing?",
     a: "Event moderators will be active 24/7 on our Discord server to help with platform glitches, rule clarifications, or ticket support."
-  },
-  {
-    q: "Is it compulsory to join the Discord server?",
-    a: "Yes. Discord is our primary hub for live announcements, hint drops, schedule updates, and real-time support throughout the event."
   }
+  
 ]
 
 export default function FAQ() {

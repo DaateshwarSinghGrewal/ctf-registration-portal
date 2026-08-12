@@ -17,7 +17,7 @@ export const navLinks = [
     to: '/auth'
   },
   {
-    label: 'Demo',
+    label: 'Teaser',
     type: 'anchor',
     sectionId: 'demo'
   },

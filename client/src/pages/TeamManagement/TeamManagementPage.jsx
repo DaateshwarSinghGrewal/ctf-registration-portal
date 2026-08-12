@@ -216,7 +216,7 @@ export default function TeamManagementPage() {
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Discord Username</label>
-          <input type="text" name="discordUsername" required pattern="^[a-zA-Z0-9._#]+$" title="Discord username contains unsupported characters" maxLength="64" value={playerDetails.discordUsername} onChange={handlePlayerDetailChange} placeholder="e.g. jonsnow" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+          <input type="text" name="discordUsername" required pattern="^((?!\d{4}$)(?!.*\.\.)[a-z0-9_][a-z0-9_.]{0,30}[a-z0-9_]|.{2,32}#[0-9]{4})$" title="Invalid Discord username format" maxLength="64" value={playerDetails.discordUsername} onChange={handlePlayerDetailChange} placeholder="e.g. jonsnow" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
         </div>
       </div>
 
@@ -864,6 +864,11 @@ export default function TeamManagementPage() {
                         placeholder="e.g. A1B2C3"
                         className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-neutral-600 font-brand tracking-widest uppercase focus:outline-none focus:border-amethyst focus:ring-1 focus:ring-amethyst transition-all"
                       />
+                      {formError && (
+                        <p role="alert" className="font-body text-sm text-red-400 mt-1">
+                          {formError}
+                        </p>
+                      )}
                     </div>
                     <Button variant="primary" type="submit" disabled={isSubmitting} className="w-full justify-center disabled:opacity-60">
                       {isSubmitting ? 'Checking…' : 'Continue'}
