@@ -106,7 +106,7 @@ export default function Landing() {
 
           {/* Date */}
           <motion.p variants={itemVariants} className="font-heading text-xl font-bold tracking-[0.3em] text-amethyst-bright sm:text-2xl mb-4">
-            16 AUGUST
+            15 AUGUST
           </motion.p>
 
           {/* Prizes */}
