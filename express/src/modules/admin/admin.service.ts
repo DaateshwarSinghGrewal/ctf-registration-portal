@@ -69,6 +69,44 @@ export async function listParties(
   return { parties: rows.map(r => toSummary(r, 0)), total };
 }
 
+export interface ExportTeamMemberView {
+  teamName: string;
+  inviteCode: string;
+  role: string;
+  fullName: string | null;
+  email: string;
+  discordUsername: string | null;
+  phone: string | null;
+  year: number | null;
+  branch: string | null;
+  rollNumber: string | null;
+  joinedAt: Date | null;
+}
+
+export async function exportAllTeams(): Promise<ExportTeamMemberView[]> {
+  const result = await pool.query(`
+    SELECT 
+      p.name AS "teamName",
+      p.id AS "inviteCode",
+      CASE WHEN p.leaderId = u.userId THEN 'Leader' ELSE 'Member' END AS "role",
+      pr.fullName AS "fullName",
+      u.email AS "email",
+      pr.discordUsername AS "discordUsername",
+      pr.phone AS "phone",
+      pr.year AS "year",
+      pr.branch AS "branch",
+      pr.rollNumber AS "rollNumber",
+      pm.joinedAt AS "joinedAt"
+    FROM parties p
+    JOIN party_members pm ON p.id = pm.partyId
+    JOIN user_auth u ON pm.userId = u.userId
+    LEFT JOIN player_profiles pr ON pr.userId = u.userId
+    ORDER BY p.createdAt ASC, "role" DESC, pm.joinedAt ASC
+  `);
+  
+  return result.rows;
+}
+
 export async function changeUserRole(
   actorId: string,
   userId: string,

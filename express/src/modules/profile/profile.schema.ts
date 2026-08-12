@@ -11,7 +11,8 @@ export const profileInputSchema = z.object({
     .string()
     .trim()
     .min(2, "Full name must be at least 2 characters")
-    .max(100, "Full name must be at most 100 characters"),
+    .max(100, "Full name must be at most 100 characters")
+    .regex(/^[a-zA-Z\s]+$/, "Full name contains unsupported characters"),
 
   // Deliberately permissive: this is an Indian college event, and callers send
   // "+91 98765 43210", "9876543210" or "098765-43210". Rejecting a real number
@@ -20,11 +21,7 @@ export const profileInputSchema = z.object({
   phone: z
     .string()
     .trim()
-    .min(8, "Phone number is too short")
-    .max(20, "Phone number is too long")
-    .refine((value) => (value.match(/\d/g)?.length ?? 0) >= 8, {
-      message: "Phone number must contain at least 8 digits",
-    }),
+    .regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
 
   // Modern Discord handles are 2–32 chars of [a-z0-9._]; legacy Name#1234 is
   // still accepted so an older account is not locked out.
@@ -50,9 +47,23 @@ export const profileInputSchema = z.object({
   rollNumber: z
     .string()
     .trim()
-    .min(3, "Roll number is too short")
-    .max(30, "Roll number is too long")
-    .regex(/^[A-Za-z0-9/-]+$/, "Roll number contains unsupported characters"),
+}).superRefine((data, ctx) => {
+  if (data.year === 1) {
+    if (!/^\d{6}$/.test(data.rollNumber)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Admission number for 1st Year must be exactly 6 digits",
+        path: ["rollNumber"],
+      });
+    }
+  } else {
+    if (!/^\d{10}$/.test(data.rollNumber)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Roll number must be exactly 10 digits",
+        path: ["rollNumber"],
+      });
+    }
+  }
 });
-
 export type ProfileInputDto = z.infer<typeof profileInputSchema>;

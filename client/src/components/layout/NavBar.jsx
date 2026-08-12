@@ -16,8 +16,12 @@ export default function NavBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const handleNavClick = (sectionId) => {
-    scrollToSection(sectionId)
     setIsMobileMenuOpen(false)
+    // Wait for the mobile menu closing animation to finish before scrolling
+    // so the header height change doesn't interrupt or offset the scroll.
+    setTimeout(() => {
+      scrollToSection(sectionId)
+    }, 300)
   }
 
   return (

@@ -24,6 +24,12 @@ export async function listParties(limit = 50, offset = 0) {
   return payload?.data ?? { parties: [], total: 0 }
 }
 
+/** GET /admin/parties/export */
+export async function exportParties() {
+  const payload = await api.get(`/admin/parties/export`)
+  return payload?.data ?? []
+}
+
 /** DELETE /admin/parties/:partyId */
 export async function deleteParty(partyId) {
   const payload = await api.delete(`/admin/parties/${encodeURIComponent(partyId)}`)

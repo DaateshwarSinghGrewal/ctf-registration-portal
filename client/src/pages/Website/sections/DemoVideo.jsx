@@ -19,7 +19,7 @@ export default function DemoVideo() {
           <div className="absolute inset-0 border border-white/10 group-hover:border-amethyst/50 transition-colors duration-300 pointer-events-none z-10" />
           <iframe
             className="absolute inset-0 h-full w-full"
-            src="https://www.youtube.com/embed/HluQIBP7cwY"
+            src="https://www.youtube.com/embed/xikh8mNeing"
             title="Demo Video"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -28,7 +28,7 @@ export default function DemoVideo() {
           ></iframe>
         </div>
 
-        <Button variant="text-link" href="https://youtu.be/HluQIBP7cwY?si=a8j5_yGzRy0jWcYR" target="_blank" rel="noopener noreferrer">
+        <Button variant="text-link" href="https://youtu.be/xikh8mNeing?si=oqlBAaqPknzge34f" target="_blank" rel="noopener noreferrer">
           Watch on YouTube
         </Button>
       </div>

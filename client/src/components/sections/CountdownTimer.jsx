@@ -1,6 +1,6 @@
 import { useCountdown } from '../../hooks/useCountdown.js'
 
-const REGISTRATION_TARGET_DATE = '2026-08-16T00:00:00'
+const REGISTRATION_TARGET_DATE = '2026-08-16T20:00:00+05:30'
 
 /**
  * Hero countdown ("Starts in") identified on the Landing section (Page

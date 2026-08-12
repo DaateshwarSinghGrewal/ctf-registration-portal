@@ -47,6 +47,7 @@ router.patch(
 );
 
 /* --- team overrides ------------------------------------------------------- */
+router.get("/parties/export", asyncHandler(controller.exportTeams));
 router.get("/parties", validate({ query: paginationSchema }), asyncHandler(controller.listParties));
 
 router.delete(

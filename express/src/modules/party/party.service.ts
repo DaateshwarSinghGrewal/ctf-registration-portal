@@ -303,6 +303,7 @@ export async function afterMemberJoined(
  * it stands at that instant.
  */
 export async function leaveParty(partyId: string, userId: string, actor: Actor): Promise<void> {
+  await assertRegistrationOpen();
   const outcome = await withTransaction(async (client) => {
     const party = await findPartyForUpdate(partyId, client);
     if (!party) throw ApiError.notFound("Team not found");
@@ -396,6 +397,7 @@ export async function removeMemberFromParty(
   targetUserId: string,
   actor: Actor
 ): Promise<PartyDetails> {
+  await assertRegistrationOpen();
   const { party, remaining } = await withTransaction(async (client) => {
     const locked = await findPartyForUpdate(partyId, client);
     if (!locked) throw ApiError.notFound("Team not found");
@@ -473,6 +475,7 @@ export async function renameParty(
   name: string,
   actor: Actor
 ): Promise<PartySummary> {
+  await assertRegistrationOpen();
   const party = await findParty(partyId);
   if (!party) throw ApiError.notFound("Team not found");
   assertLeader(party, leaderId);
@@ -512,6 +515,7 @@ export async function setPartyPassword(
   password: string | null,
   actor: Actor
 ): Promise<PartySummary> {
+  await assertRegistrationOpen();
   const party = await findParty(partyId);
   if (!party) throw ApiError.notFound("Team not found");
   assertLeader(party, leaderId);
@@ -545,6 +549,7 @@ export async function setPartyVisibility(
   visibility: PartyVisibility,
   actor: Actor
 ): Promise<PartySummary> {
+  await assertRegistrationOpen();
   const party = await findParty(partyId);
   if (!party) throw ApiError.notFound("Team not found");
   assertLeader(party, leaderId);
@@ -576,6 +581,7 @@ export async function setPartyLock(
   isLocked: boolean,
   actor: Actor
 ): Promise<PartySummary> {
+  await assertRegistrationOpen();
   const party = await findParty(partyId);
   if (!party) throw ApiError.notFound("Team not found");
   assertLeader(party, leaderId);
@@ -620,6 +626,7 @@ export async function transferLeadership(
   newLeaderId: string,
   actor: Actor
 ): Promise<PartyDetails> {
+  await assertRegistrationOpen();
   const { party, members } = await withTransaction(async (client) => {
     const locked = await findPartyForUpdate(partyId, client);
     if (!locked) throw ApiError.notFound("Team not found");
@@ -675,6 +682,7 @@ export async function deleteParty(
   leaderId: string,
   actor: Actor
 ): Promise<void> {
+  await assertRegistrationOpen();
   const { party, members } = await withTransaction(async (client) => {
     const locked = await findPartyForUpdate(partyId, client);
     if (!locked) throw ApiError.notFound("Team not found");

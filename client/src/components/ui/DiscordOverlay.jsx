@@ -1,7 +1,7 @@
 import React from 'react'
 
 export default function DiscordOverlay({
-  inviteUrl = 'https://discord.gg',
+  inviteUrl = 'https://discord.gg/Jy7j86eGk',
   className = '',
 }) {
   return (

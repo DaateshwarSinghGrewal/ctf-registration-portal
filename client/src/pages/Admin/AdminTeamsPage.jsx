@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { listParties, deleteParty } from '../../api/admin.js'
+import { listParties, deleteParty, exportParties } from '../../api/admin.js'
+import * as XLSX from 'xlsx'
 
 export default function AdminTeamsPage() {
   const [parties, setParties] = useState([])
@@ -33,11 +34,57 @@ export default function AdminTeamsPage() {
     }
   }
 
+  const [isExporting, setIsExporting] = useState(false)
+
+  const handleExport = async () => {
+    setIsExporting(true)
+    try {
+      const data = await exportParties()
+      if (!data || data.length === 0) {
+        alert("No team members found to export.")
+        return
+      }
+
+      // Map backend data to beautiful Excel columns
+      const formattedData = data.map(row => ({
+        "Team Name": row.teamName,
+        "Invite Code": row.inviteCode,
+        "Role": row.role,
+        "Full Name": row.fullName || "-",
+        "Email": row.email,
+        "Discord": row.discordUsername || "-",
+        "Phone": row.phone || "-",
+        "Year": row.year || "-",
+        "Branch": row.branch || "-",
+        "Roll / Admission No.": row.rollNumber || "-",
+        "Joined At": row.joinedAt ? new Date(row.joinedAt).toLocaleString() : "-"
+      }))
+
+      const ws = XLSX.utils.json_to_sheet(formattedData)
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, "Teams")
+      XLSX.writeFile(wb, "CTF_Teams_Export.xlsx")
+    } catch (err) {
+      alert(`Export Failed: ${err.message}`)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h2 className="text-2xl font-heading tracking-widest uppercase text-white mb-2">Squad Registry</h2>
-        <p className="text-sm font-body text-neutral-400">View and terminate active squads.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-heading tracking-widest uppercase text-white mb-2">Squad Registry</h2>
+          <p className="text-sm font-body text-neutral-400">View and terminate active squads.</p>
+        </div>
+        <button
+          onClick={handleExport}
+          disabled={isExporting}
+          className="px-6 py-2.5 bg-amethyst hover:bg-amethyst-light text-void font-heading tracking-widest uppercase text-sm font-bold rounded-lg transition-all shadow-[0_0_15px_rgba(216,180,254,0.3)] hover:shadow-[0_0_25px_rgba(216,180,254,0.5)] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+        >
+          {isExporting ? 'Exporting...' : 'Export to Excel'}
+        </button>
       </div>
 
       {error && <div className="text-red-400 text-sm font-heading tracking-widest uppercase">{error}</div>}

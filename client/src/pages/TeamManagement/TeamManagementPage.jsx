@@ -50,7 +50,7 @@ export default function TeamManagementPage() {
   // -- UI State --
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
+  const [toastMessage, setToastMessage] = useState(null)
   const [publicTeams, setPublicTeams] = useState([])
   const [isLoadingPublicTeams, setIsLoadingPublicTeams] = useState(false)
   const [publicTeamsPage, setPublicTeamsPage] = useState(0)
@@ -83,7 +83,7 @@ export default function TeamManagementPage() {
         await rejectRequest(requestId)
       }
     } catch (err) {
-      // Error is logged by the hook
+      showToast(err.message || 'Failed to process request')
     } finally {
       // Allow a brief delay for the socket event to remove it from the list before clearing loading state
       setTimeout(() => {
@@ -171,8 +171,8 @@ export default function TeamManagementPage() {
 
   const showToast = useCallback((msg) => {
     if (toastTimer.current) clearTimeout(toastTimer.current)
-    setToastMessage(msg)
-    toastTimer.current = setTimeout(() => setToastMessage(''), 4000)
+    setToastMessage({ text: msg, id: Date.now() })
+    toastTimer.current = setTimeout(() => setToastMessage(null), 4000)
   }, [])
 
   useEffect(() => () => clearTimeout(toastTimer.current), [])
@@ -208,15 +208,15 @@ export default function TeamManagementPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Full Name</label>
-          <input type="text" name="fullName" required value={playerDetails.fullName} onChange={handlePlayerDetailChange} placeholder="e.g. Rishank Sharma" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+          <input type="text" name="fullName" required pattern="^[a-zA-Z\s]+$" title="Full name can only contain letters and spaces" maxLength="100" value={playerDetails.fullName} onChange={handlePlayerDetailChange} placeholder="e.g. Rishank Sharma" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Phone Number</label>
-          <input type="tel" name="phone" required value={playerDetails.phone} onChange={handlePlayerDetailChange} placeholder="e.g. +91 98765 43210" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+          <input type="tel" name="phone" required pattern="^\d{10}$" title="Phone number must be exactly 10 digits" maxLength="10" value={playerDetails.phone} onChange={handlePlayerDetailChange} placeholder="e.g. 9876543210" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Discord Username</label>
-          <input type="text" name="discordUsername" required value={playerDetails.discordUsername} onChange={handlePlayerDetailChange} placeholder="e.g. jonsnow" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+          <input type="text" name="discordUsername" required pattern="^[a-zA-Z0-9._#]+$" title="Discord username contains unsupported characters" maxLength="64" value={playerDetails.discordUsername} onChange={handlePlayerDetailChange} placeholder="e.g. jonsnow" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
         </div>
       </div>
 
@@ -236,8 +236,8 @@ export default function TeamManagementPage() {
           <input type="text" name="branch" required value={playerDetails.branch} onChange={handlePlayerDetailChange} placeholder="e.g. COPC" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
         </div>
         <div className="flex flex-col gap-2">
-          <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Roll No.</label>
-          <input type="text" name="rollNumber" required value={playerDetails.rollNumber} onChange={handlePlayerDetailChange} placeholder="e.g. 1025170..." className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
+          <label className="text-[10px] font-heading tracking-widest uppercase text-amethyst-light">Roll No. / Admission No.</label>
+          <input type="text" name="rollNumber" required pattern={playerDetails.year === '1' ? "^\\d{6}$" : "^\\d{10}$"} title={playerDetails.year === '1' ? "Admission number for 1st Year must be exactly 6 digits" : "Roll number must be exactly 10 digits"} maxLength={playerDetails.year === '1' ? 6 : 10} value={playerDetails.rollNumber} onChange={handlePlayerDetailChange} placeholder={playerDetails.year === '1' ? "e.g. 102517" : "e.g. 1025170000"} className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amethyst transition-all" />
         </div>
       </div>
 
@@ -441,9 +441,10 @@ export default function TeamManagementPage() {
       <NoiseDarkPurpleGradientWithSquares />
 
       {/* Premium Floating Toast Notification */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {toastMessage && (
           <motion.div
+            key={toastMessage.id}
             initial={{ opacity: 0, x: 50, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9, filter: 'blur(5px)' }}
@@ -467,7 +468,7 @@ export default function TeamManagementPage() {
                   <span className="h-px flex-1 bg-white/10" />
                 </div>
                 <p className="font-mono text-xs text-neutral-300 leading-relaxed tracking-wide">
-                  {toastMessage}
+                  {toastMessage.text}
                 </p>
               </div>
             </div>

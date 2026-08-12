@@ -38,14 +38,7 @@ export default function ContactUs() {
               </a>
             ))}
           </nav>
-          <div className="flex gap-6">
-             <a href="/faq" className="font-body text-sm text-amethyst hover:text-fuchsia-400 transition-colors">
-               Read the FAQ
-             </a>
-             <a href="mailto:contact@somnium.com" className="font-body text-sm text-amethyst hover:text-fuchsia-400 transition-colors">
-               Contact Support
-             </a>
-          </div>
+
         </div>
       </div>
 

@@ -290,7 +290,7 @@ export default function NoiseDarkPurpleGradientWithSquares({
   }, [direction, speed, squareSize]);
 
   return (
-    <div className={`absolute inset-0 z-0 bg-[#060010] ${className}`}>
+    <div className={`fixed inset-0 z-0 bg-[#060010] ${className}`}>
       {/* Soft purple spotlight tone */}
       <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_620px_at_50%_200px,rgba(168,85,247,0.25),transparent_70%)]" />
 

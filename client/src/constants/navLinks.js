@@ -22,6 +22,11 @@ export const navLinks = [
     sectionId: 'demo'
   },
   {
+    label: 'FAQ',
+    type: 'anchor',
+    sectionId: 'faq'
+  },
+  {
     label: 'Info',
     type: 'anchor',
     sectionId: 'contact'

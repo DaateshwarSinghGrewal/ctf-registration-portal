@@ -2,6 +2,7 @@ import Landing from './sections/Landing.jsx'
 import DemoVideo from './sections/DemoVideo.jsx'
 import AboutGame from './sections/AboutGame.jsx'
 import RegisterTeaser from './sections/RegisterTeaser.jsx'
+import FAQ from './sections/FAQ.jsx'
 // import Sponsors from './sections/Sponsors.jsx'
 import ContactUs from './sections/ContactUs.jsx'
 
@@ -23,6 +24,8 @@ export default function WebsitePage() {
       <AboutGame />
       <Separator />
       <RegisterTeaser />
+      <Separator />
+      <FAQ />
       <Separator />
       {/* <Sponsors /> */}
       <Separator />

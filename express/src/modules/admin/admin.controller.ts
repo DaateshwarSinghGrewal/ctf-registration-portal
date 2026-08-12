@@ -16,6 +16,11 @@ export async function listParties(req: Request, res: Response): Promise<void> {
   ok(res, await service.listParties(limit, offset));
 }
 
+export async function exportTeams(req: Request, res: Response): Promise<void> {
+  const data = await service.exportAllTeams();
+  ok(res, data, "Export data retrieved");
+}
+
 export async function getUser(req: Request, res: Response): Promise<void> {
   ok(res, await service.getUser(pathParam(req, "userId")));
 }
