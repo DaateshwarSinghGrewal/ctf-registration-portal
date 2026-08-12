@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { SocketProvider } from './realtime/SocketProvider.jsx'
 import { routes } from './router/routes.jsx'
 import DiscordOverlay from './components/ui/DiscordOverlay.jsx'
+import { Analytics } from '@vercel/analytics/react'
 
 /**
  * Root application component. Wraps the routed tree in AuthProvider so
@@ -20,6 +21,7 @@ export default function App() {
       <SocketProvider>
         {element}
         <DiscordOverlay />
+        <Analytics />
       </SocketProvider>
     </AuthProvider>
   )
