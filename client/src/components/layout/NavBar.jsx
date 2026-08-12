@@ -6,6 +6,7 @@ import { navLinks } from '../../constants/navLinks.js'
 import { useScrollAnchor } from '../../hooks/useScrollAnchor.js'
 import Button from '../ui/Button.jsx'
 import somniumLogo from '../../assets/somniumLogo.png'
+import { useAuth } from '../../context/AuthContext.jsx'
 
 /**
  * Persistent top navigation bar for the Website screen.
@@ -14,6 +15,7 @@ import somniumLogo from '../../assets/somniumLogo.png'
 export default function NavBar() {
   const { scrollToSection } = useScrollAnchor()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { isAuthenticated } = useAuth()
 
   const handleNavClick = (sectionId) => {
     setIsMobileMenuOpen(false)
@@ -68,16 +70,28 @@ export default function NavBar() {
               </button>
             ))}
 
-          <Button variant="text-link" to="/auth" showArrow={false}>
-            Register Now
-          </Button>
+          {isAuthenticated ? (
+            <Button variant="text-link" to="/team" showArrow={false}>
+              My Team
+            </Button>
+          ) : (
+            <Button variant="text-link" to="/auth" showArrow={false}>
+              Register Now
+            </Button>
+          )}
         </div>
 
         {/* Mobile Hamburger Button */}
         <div className="flex items-center gap-3 md:hidden">
-          <Button variant="text-link" to="/auth" showArrow={false} className="text-xs px-2 py-1">
-            Register
-          </Button>
+          {isAuthenticated ? (
+            <Button variant="text-link" to="/team" showArrow={false} className="text-xs px-2 py-1">
+              My Team
+            </Button>
+          ) : (
+            <Button variant="text-link" to="/auth" showArrow={false} className="text-xs px-2 py-1">
+              Register
+            </Button>
+          )}
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -112,8 +126,8 @@ export default function NavBar() {
                   </button>
                 ))}
               <div className="pt-2 border-t border-white/10">
-                <Button variant="pill" to="/auth" className="w-full justify-center text-sm py-3" onClick={() => setIsMobileMenuOpen(false)}>
-                  Register Now
+                <Button variant="pill" to={isAuthenticated ? "/team" : "/auth"} className="w-full justify-center text-sm py-3" onClick={() => setIsMobileMenuOpen(false)}>
+                  {isAuthenticated ? 'My Team' : 'Register Now'}
                 </Button>
               </div>
             </div>
