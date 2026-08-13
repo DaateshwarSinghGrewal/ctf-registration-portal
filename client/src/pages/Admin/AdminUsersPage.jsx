@@ -5,12 +5,17 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const limit = 50
 
   const fetchUsers = async () => {
     setIsLoading(true)
     try {
-      const data = await listUsers(100, 0)
+      const offset = (page - 1) * limit
+      const data = await listUsers(limit, offset)
       setUsers(data.users)
+      setTotal(data.total)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -20,7 +25,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     fetchUsers()
-  }, [])
+  }, [page])
 
   const handleRoleChange = async (userId, currentRole) => {
     const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN'
@@ -90,6 +95,25 @@ export default function AdminUsersPage() {
                 )}
               </tbody>
             </table>
+            <div className="flex justify-between items-center p-4 border-t border-white/10">
+              <button 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="text-xs font-heading tracking-widest uppercase text-neutral-400 hover:text-white disabled:opacity-50 transition-colors"
+              >
+                Previous
+              </button>
+              <span className="text-xs font-heading tracking-widest uppercase text-neutral-500">
+                Page {page} of {Math.ceil(total / limit) || 1} ({total} Total)
+              </span>
+              <button 
+                onClick={() => setPage(p => Math.min(Math.ceil(total / limit) || 1, p + 1))}
+                disabled={page >= (Math.ceil(total / limit) || 1)}
+                className="text-xs font-heading tracking-widest uppercase text-neutral-400 hover:text-white disabled:opacity-50 transition-colors"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
