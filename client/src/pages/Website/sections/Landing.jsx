@@ -80,9 +80,9 @@ export default function Landing() {
           {/* Sponsor Logos */}
           <motion.div variants={itemVariants} className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-4 sm:gap-6">
-              <img src={ccsLogo} alt="CCS Logo" className="h-14 sm:h-16 md:h-20 w-auto object-contain opacity-90" />
-              <span className="font-heading text-base sm:text-lg font-semibold text-white/30">×</span>
               <img src={froshLogo} alt="Frosh Logo" className="h-20 sm:h-24 md:h-32 w-auto object-contain opacity-90" />
+              <span className="font-heading text-base sm:text-lg font-semibold text-white/30">×</span>
+              <img src={ccsLogo} alt="CCS Logo" className="h-14 sm:h-16 md:h-20 w-auto object-contain opacity-90" />
             </div>
             <p className="font-heading text-[10px] sm:text-xs md:text-base font-semibold uppercase tracking-widest text-crystal-light -mt-1 sm:-mt-2 md:-mt-4">
               PRESENTS
