@@ -13,7 +13,7 @@ export default function CountdownTimer() {
   const { days, hours, minutes, seconds } = useCountdown(REGISTRATION_TARGET_DATE)
 
   // Toggle this flag to true to show the PLAY NOW button instead of the timer
-  const SHOW_BUTTON = false
+  const SHOW_BUTTON = true
 
   const units = [
     { label: 'Days', value: days },
