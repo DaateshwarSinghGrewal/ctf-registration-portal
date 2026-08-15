@@ -2,7 +2,7 @@ import { useCountdown } from '../../hooks/useCountdown.js'
 import { Play } from 'lucide-react'
 import Button from '../ui/Button.jsx'
 
-const REGISTRATION_TARGET_DATE = '2026-08-15T21:00:00+05:30'
+const REGISTRATION_TARGET_DATE = '2026-08-15T21:10:00+05:30'
 
 /**
  * Hero countdown ("Starts in") identified on the Landing section (Page
@@ -27,6 +27,7 @@ export default function CountdownTimer() {
       <div className="flex flex-col items-center justify-center max-w-full min-h-[140px]">
         <Button 
           variant="primary" 
+          href="https://game.ccstiet.com"
           className="!text-white !rounded-full px-16 py-5 !text-2xl font-bold tracking-[0.15em] hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(168,85,247,0.4)]"
         >
           <span className="flex items-center gap-3">
